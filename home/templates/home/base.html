@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable orbitron_d3a59e73-module__31AvCG__variable h-full antialiased">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+  <!-- Mux CDN preconnects — start TLS handshake before JS loads -->
+  <link rel="preconnect" href="https://stream.mux.com" crossorigin/>
+  <link rel="preconnect" href="https://cdn.mux.com" crossorigin/>
+
+  <!-- Font preloads -->
+  <link rel="preload" href="/_next/static/media/6ec6b677ce77d328-s.p.11quipya.7f20.woff2" as="font" crossorigin type="font/woff2"/>
+  <link rel="preload" href="/_next/static/media/797e433ab948586e-s.p.09zddjkbdep5a.woff2" as="font" crossorigin type="font/woff2"/>
+  <link rel="preload" href="/_next/static/media/caa3a2e1cccd8315-s.p.09~u27dqhyhd6.woff2" as="font" crossorigin type="font/woff2"/>
+
+  <!-- Next.js CSS bundle (Tailwind styles used by the templates) -->
+  <link rel="stylesheet" href="/_next/static/chunks/0r7shs23u9y6f.css"/>
+
+  <meta name="next-size-adjust" content=""/>
+  <title>{% block title %}XECOTech Build Without Limits{% endblock %}</title>
+  <meta name="description" content="{% block description %}Tech Giant{% endblock %}"/>
+  <link rel="icon" href="{% static 'images/logo.svg' %}" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="{% static 'images/logo.svg' %}"/>
+
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-full flex flex-col">
+
+  {% block body %}{% endblock %}
+
+</body>
+</html>

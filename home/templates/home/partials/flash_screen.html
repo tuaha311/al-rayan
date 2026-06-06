@@ -1,0 +1,70 @@
+<div id="flash-screen"
+     class="fixed inset-0 z-[9999] flex items-center justify-center bg-black"
+     aria-hidden="true">
+  <span style="display:flex;padding-right:0.18em">
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:700;opacity:0;clip-path:inset(0 100% 0 0)">X</span>
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:657;opacity:0;clip-path:inset(0 100% 0 0)">E</span>
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:614;opacity:0;clip-path:inset(0 100% 0 0)">C</span>
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:571;opacity:0;clip-path:inset(0 100% 0 0)">O</span>
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:529;opacity:0;clip-path:inset(0 100% 0 0)">T</span>
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:486;opacity:0;clip-path:inset(0 100% 0 0)">E</span>
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:443;opacity:0;clip-path:inset(0 100% 0 0)">C</span>
+    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:400;opacity:0;clip-path:inset(0 100% 0 0)">H</span>
+  </span>
+</div>
+
+<script>
+(function () {
+  const screen = document.getElementById('flash-screen');
+  if (!screen) return;
+
+  const letters = screen.querySelectorAll('[data-flash-letter]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Prevent the page from scrolling while the curtain is up.
+  const prevOverflow = document.documentElement.style.overflow;
+  document.documentElement.style.overflow = 'hidden';
+
+  function dismiss() {
+    document.documentElement.style.overflow = prevOverflow;
+    screen.remove();
+  }
+
+  if (reduce) {
+    // Honor reduced-motion: skip the intro entirely.
+    dismiss();
+    return;
+  }
+
+  const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const STAGGER = 110;   // ms between letters
+  const REVEAL = 620;    // ms per letter reveal
+  const HOLD = 450;      // ms to hold the full word
+  const LIFT = 750;      // ms for the curtain to lift
+
+  // Reveal each letter left-to-right (fade + un-clip).
+  letters.forEach((el, i) => {
+    el.animate(
+      [
+        { opacity: 0, clipPath: 'inset(0 100% 0 0)', transform: 'translateY(0.15em)' },
+        { opacity: 1, clipPath: 'inset(0 0 0 0)',    transform: 'translateY(0)' },
+      ],
+      { duration: REVEAL, delay: i * STAGGER, easing: EASE, fill: 'forwards' }
+    );
+  });
+
+  const revealDone = (letters.length - 1) * STAGGER + REVEAL;
+
+  // Lift the curtain after the word has been revealed and held.
+  window.setTimeout(() => {
+    const lift = screen.animate(
+      [
+        { transform: 'translateY(0)',     opacity: 1 },
+        { transform: 'translateY(-100%)', opacity: 1 },
+      ],
+      { duration: LIFT, easing: EASE, fill: 'forwards' }
+    );
+    lift.onfinish = dismiss;
+  }, revealDone + HOLD);
+})();
+</script>
