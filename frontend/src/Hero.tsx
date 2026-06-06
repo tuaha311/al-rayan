@@ -167,6 +167,7 @@ export default function Hero() {
           </motion.svg>
         </div>
       </div>
+
     </div>
   )
 }

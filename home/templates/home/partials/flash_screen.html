@@ -1,70 +1,126 @@
+{% load static %}
 <div id="flash-screen"
-     class="fixed inset-0 z-[9999] flex items-center justify-center bg-black"
+     style="position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;"
      aria-hidden="true">
-  <span style="display:flex;padding-right:0.18em">
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:700;opacity:0;clip-path:inset(0 100% 0 0)">X</span>
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:657;opacity:0;clip-path:inset(0 100% 0 0)">E</span>
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:614;opacity:0;clip-path:inset(0 100% 0 0)">C</span>
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:571;opacity:0;clip-path:inset(0 100% 0 0)">O</span>
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:529;opacity:0;clip-path:inset(0 100% 0 0)">T</span>
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:486;opacity:0;clip-path:inset(0 100% 0 0)">E</span>
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:443;opacity:0;clip-path:inset(0 100% 0 0)">C</span>
-    <span data-flash-letter style="font-family:var(--font-orbitron),sans-serif;font-size:clamp(1.5rem,4.5vw,12rem);letter-spacing:0.18em;color:#ffffff;text-transform:uppercase;user-select:none;display:inline-block;font-weight:400;opacity:0;clip-path:inset(0 100% 0 0)">H</span>
-  </span>
+  <canvas id="silk-canvas" style="position:absolute;top:0;left:0;display:block;"></canvas>
+
+  <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.30) 0%,transparent 50%,rgba(0,0,0,.50) 100%);pointer-events:none;"></div>
+
+  <div id="silk-content" style="position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s ease;">
+    <img id="silk-logo" src="{% static 'images/logo-transparent.png' %}" alt="xeco" style="max-width:100%;max-height:100%;object-fit:contain;opacity:0;transform:translateY(2rem);transition:opacity .9s ease,transform .9s ease;" />
+  </div>
+
+  <div id="silk-corner" style="position:absolute;top:2rem;left:2rem;z-index:3;font-size:.75rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;color:rgba(156,163,175,.5);opacity:0;transform:translateY(-1rem);transition:opacity .9s ease .9s,transform .9s ease .9s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
+    2025
+  </div>
 </div>
 
 <script>
 (function () {
-  const screen = document.getElementById('flash-screen');
-  if (!screen) return;
+  var screen  = document.getElementById('flash-screen');
+  var canvas  = document.getElementById('silk-canvas');
+  var content = document.getElementById('silk-content');
+  var logo    = document.getElementById('silk-logo');
+  if (!screen || !canvas) return;
 
-  const letters = screen.querySelectorAll('[data-flash-letter]');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Prevent the page from scrolling while the curtain is up.
-  const prevOverflow = document.documentElement.style.overflow;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var prevOverflow = document.documentElement.style.overflow;
   document.documentElement.style.overflow = 'hidden';
 
   function dismiss() {
     document.documentElement.style.overflow = prevOverflow;
-    screen.remove();
+    screen.style.transition = 'opacity .65s ease';
+    screen.style.opacity    = '0';
+    setTimeout(function() { if (screen.parentNode) screen.parentNode.removeChild(screen); }, 700);
   }
 
-  if (reduce) {
-    // Honor reduced-motion: skip the intro entirely.
-    dismiss();
-    return;
+  if (reduce) { dismiss(); return; }
+
+  var ctx  = canvas.getContext('2d');
+  var raf;
+  var time = 0;
+  var speed = 0.02, scale = 2, noiseI = 0.8;
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function noise(x, y) {
+    var G = 2.71828;
+    return (G * Math.sin(G * x) * G * Math.sin(G * y) * (1 + x)) % 1;
   }
 
-  const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
-  const STAGGER = 110;   // ms between letters
-  const REVEAL = 620;    // ms per letter reveal
-  const HOLD = 450;      // ms to hold the full word
-  const LIFT = 750;      // ms for the curtain to lift
+  function tick() {
+    var w = canvas.width, h = canvas.height;
+    var img  = ctx.createImageData(w, h);
+    var data = img.data;
+    var tOff = speed * time;
 
-  // Reveal each letter left-to-right (fade + un-clip).
-  letters.forEach((el, i) => {
-    el.animate(
-      [
-        { opacity: 0, clipPath: 'inset(0 100% 0 0)', transform: 'translateY(0.15em)' },
-        { opacity: 1, clipPath: 'inset(0 0 0 0)',    transform: 'translateY(0)' },
-      ],
-      { duration: REVEAL, delay: i * STAGGER, easing: EASE, fill: 'forwards' }
-    );
+    // Fill background colour first into imageData so no transparent gaps
+    for (var i = 0; i < data.length; i += 4) {
+      data[i] = 26; data[i+1] = 26; data[i+2] = 26; data[i+3] = 255;
+    }
+
+    // Compute silk for every 2nd pixel, fill 2×2 block
+    for (var x = 0; x < w; x += 2) {
+      for (var y = 0; y < h; y += 2) {
+        var u  = (x / w) * scale;
+        var v  = (y / h) * scale;
+        var tx = u;
+        var ty = v + 0.03 * Math.sin(8.0 * tx - tOff);
+        var pat = 0.6 + 0.4 * Math.sin(
+          5.0 * (tx + ty + Math.cos(3.0 * tx + 5.0 * ty) + 0.02 * tOff) +
+          Math.sin(20.0 * (tx + ty - 0.1 * tOff))
+        );
+        var intensity = Math.max(0, pat - noise(x, y) / 15.0 * noiseI);
+        var r = (123 * intensity) | 0;
+        var g = (116 * intensity) | 0;
+        var b = (129 * intensity) | 0;
+
+        // paint 2×2 block so no pixel is left at the background grey
+        var coords = [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
+        for (var c = 0; c < 4; c++) {
+          var cx = coords[c][0], cy = coords[c][1];
+          if (cx < w && cy < h) {
+            var idx = (cy * w + cx) * 4;
+            data[idx]   = r; data[idx+1] = g;
+            data[idx+2] = b; data[idx+3] = 255;
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(img, 0, 0);
+
+    // vignette overlay
+    var vig = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.55);
+    vig.addColorStop(0, 'rgba(0,0,0,.05)');
+    vig.addColorStop(1, 'rgba(0,0,0,.45)');
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, w, h);
+
+    time++;
+    raf = requestAnimationFrame(tick);
+  }
+
+  raf = requestAnimationFrame(tick);
+
+  // Fade in logo on next frame so canvas has already painted
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      content.style.opacity = '1';
+      logo.style.opacity    = '1';
+      logo.style.transform  = 'translateY(0)';
+    });
   });
 
-  const revealDone = (letters.length - 1) * STAGGER + REVEAL;
-
-  // Lift the curtain after the word has been revealed and held.
-  window.setTimeout(() => {
-    const lift = screen.animate(
-      [
-        { transform: 'translateY(0)',     opacity: 1 },
-        { transform: 'translateY(-100%)', opacity: 1 },
-      ],
-      { duration: LIFT, easing: EASE, fill: 'forwards' }
-    );
-    lift.onfinish = dismiss;
-  }, revealDone + HOLD);
+  setTimeout(function() {
+    cancelAnimationFrame(raf);
+    window.removeEventListener('resize', resize);
+    dismiss();
+  }, 2600);
 })();
 </script>
