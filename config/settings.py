@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.urls import reverse_lazy
+from django.templatetags.static import static
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
@@ -35,6 +38,11 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 # Application definition
 
 INSTALLED_APPS = [
+    # Unfold admin theme — must precede django.contrib.admin so its templates
+    # and AdminSite take priority.
+    'unfold',
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -63,7 +71,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -168,3 +176,105 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 # Where contact-form submissions are delivered.
 CONTACT_RECIPIENT_EMAIL = os.environ.get('CONTACT_RECIPIENT_EMAIL', EMAIL_HOST_USER)
+
+
+# ---------------------------------------------------------------------------
+# Unfold admin theme
+# https://unfoldadmin.com/docs/
+# ---------------------------------------------------------------------------
+UNFOLD = {
+    'SITE_TITLE': 'Al Rayan Admin',
+    'SITE_HEADER': 'Al Rayan',
+    'SITE_SUBHEADER': 'Cloth House — Store management',
+    'SITE_SYMBOL': 'checkroom',  # Material Symbols icon used as a fallback mark.
+    'SITE_LOGO': lambda request: static('images/logo.svg'),
+    'SHOW_HISTORY': True,
+    'SHOW_VIEW_ON_SITE': False,
+    'THEME': None,  # let the user toggle light/dark.
+    'DASHBOARD_CALLBACK': 'store.dashboard.dashboard_callback',
+    'BORDER_RADIUS': '8px',
+    'COLORS': {
+        # Emerald palette — a premium, culturally fitting brand green.
+        'primary': {
+            '50': '236 253 245',
+            '100': '209 250 229',
+            '200': '167 243 208',
+            '300': '110 231 183',
+            '400': '52 211 153',
+            '500': '16 185 129',
+            '600': '5 150 105',
+            '700': '4 120 87',
+            '800': '6 95 70',
+            '900': '6 78 59',
+            '950': '2 44 34',
+        },
+    },
+    'SIDEBAR': {
+        'show_search': True,
+        'show_all_applications': False,
+        'navigation': [
+            {
+                'title': _('Overview'),
+                'separator': False,
+                'items': [
+                    {
+                        'title': _('Dashboard'),
+                        'icon': 'dashboard',
+                        'link': reverse_lazy('admin:index'),
+                    },
+                ],
+            },
+            {
+                'title': _('Catalogue'),
+                'separator': True,
+                'items': [
+                    {'title': _('Products'), 'icon': 'checkroom',
+                     'link': reverse_lazy('admin:store_product_changelist')},
+                    {'title': _('Variants'), 'icon': 'palette',
+                     'link': reverse_lazy('admin:store_productvariant_changelist')},
+                    {'title': _('Categories'), 'icon': 'category',
+                     'link': reverse_lazy('admin:store_category_changelist')},
+                    {'title': _('Fabrics'), 'icon': 'texture',
+                     'link': reverse_lazy('admin:store_fabric_changelist')},
+                    {'title': _('Seasons'), 'icon': 'sunny',
+                     'link': reverse_lazy('admin:store_season_changelist')},
+                    {'title': _('Colors'), 'icon': 'colorize',
+                     'link': reverse_lazy('admin:store_color_changelist')},
+                ],
+            },
+            {
+                'title': _('Sales & Pricing'),
+                'separator': True,
+                'items': [
+                    {'title': _('Discounts'), 'icon': 'sell',
+                     'link': reverse_lazy('admin:store_discount_changelist')},
+                    {'title': _('Shipping rates'), 'icon': 'local_shipping',
+                     'link': reverse_lazy('admin:store_shippingrate_changelist')},
+                    {'title': _('Store settings'), 'icon': 'tune',
+                     'link': reverse_lazy('admin:store_storesetting_changelist')},
+                ],
+            },
+            {
+                'title': _('Orders'),
+                'separator': True,
+                'items': [
+                    {'title': _('Orders'), 'icon': 'shopping_bag',
+                     'link': reverse_lazy('admin:store_order_changelist'),
+                     'badge': 'store.dashboard.pending_orders_badge'},
+                    {'title': _('Carts'), 'icon': 'shopping_cart',
+                     'link': reverse_lazy('admin:store_cart_changelist')},
+                ],
+            },
+            {
+                'title': _('Administration'),
+                'separator': True,
+                'items': [
+                    {'title': _('Users'), 'icon': 'person',
+                     'link': reverse_lazy('admin:auth_user_changelist')},
+                    {'title': _('Groups'), 'icon': 'group',
+                     'link': reverse_lazy('admin:auth_group_changelist')},
+                ],
+            },
+        ],
+    },
+}

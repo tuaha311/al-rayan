@@ -1,6 +1,18 @@
 from django.contrib import admin, messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import Group
 from django.db.models import Count
 from django.utils.html import format_html
+
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.contrib.filters.admin import (
+    ChoicesDropdownFilter,
+    RangeDateFilter,
+    RelatedDropdownFilter,
+)
+from unfold.decorators import display
 
 from . import constants
 from .models import (
@@ -37,7 +49,7 @@ def money(value):
 # Catalogue
 # ---------------------------------------------------------------------------
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):
     list_display = ('full_path', 'parent', 'product_count', 'is_active', 'sort_order')
     list_editable = ('is_active', 'sort_order')
     list_filter = ('is_active',)
@@ -54,7 +66,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Fabric)
-class FabricAdmin(admin.ModelAdmin):
+class FabricAdmin(ModelAdmin):
     list_display = ('name', 'slug', 'is_active', 'sort_order')
     list_editable = ('is_active', 'sort_order')
     search_fields = ('name',)
@@ -62,7 +74,7 @@ class FabricAdmin(admin.ModelAdmin):
 
 
 @admin.register(Season)
-class SeasonAdmin(admin.ModelAdmin):
+class SeasonAdmin(ModelAdmin):
     list_display = ('name', 'slug', 'is_active', 'sort_order')
     list_editable = ('is_active', 'sort_order')
     search_fields = ('name',)
@@ -70,7 +82,7 @@ class SeasonAdmin(admin.ModelAdmin):
 
 
 @admin.register(Color)
-class ColorAdmin(admin.ModelAdmin):
+class ColorAdmin(ModelAdmin):
     list_display = ('swatch', 'name', 'hex_code')
     search_fields = ('name', 'hex_code')
     prepopulated_fields = {'slug': ('name',)}
@@ -85,7 +97,7 @@ class ColorAdmin(admin.ModelAdmin):
         )
 
 
-class ProductImageInline(admin.TabularInline):
+class ProductImageInline(TabularInline):
     model = ProductImage
     extra = 1
     fields = ('preview', 'image', 'variant', 'alt_text', 'is_primary', 'sort_order')
@@ -100,7 +112,7 @@ class ProductImageInline(admin.TabularInline):
         return '—'
 
 
-class ProductVariantInline(admin.TabularInline):
+class ProductVariantInline(TabularInline):
     model = ProductVariant
     extra = 1
     autocomplete_fields = ('color',)
@@ -108,7 +120,7 @@ class ProductVariantInline(admin.TabularInline):
 
 
 @admin.register(ProductVariant)
-class ProductVariantAdmin(admin.ModelAdmin):
+class ProductVariantAdmin(ModelAdmin):
     """Registered mainly so order/cart admins can autocomplete variants."""
 
     list_display = ('product', 'color', 'sku', 'price_delta', 'stock', 'is_active')
@@ -118,12 +130,18 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(ModelAdmin):
     list_display = (
         'name', 'sku', 'category', 'fabric', 'season',
         'price_column', 'stock_column', 'is_active', 'is_featured',
     )
-    list_filter = ('is_active', 'is_featured', 'sold_by_meters', 'category', 'fabric', 'season')
+    list_filter = (
+        'is_active', 'is_featured', 'sold_by_meters',
+        ('category', RelatedDropdownFilter),
+        ('fabric', RelatedDropdownFilter),
+        ('season', RelatedDropdownFilter),
+    )
+    list_filter_submit = True
     list_editable = ('is_active', 'is_featured')
     search_fields = ('name', 'sku', 'short_description')
     prepopulated_fields = {'slug': ('name',)}
@@ -198,7 +216,7 @@ class ProductAdmin(admin.ModelAdmin):
 # Pricing
 # ---------------------------------------------------------------------------
 @admin.register(Discount)
-class DiscountAdmin(admin.ModelAdmin):
+class DiscountAdmin(ModelAdmin):
     list_display = ('name', 'value_display', 'live_badge', 'priority', 'start_at', 'end_at')
     list_filter = ('discount_type', 'is_active')
     search_fields = ('name', 'code')
@@ -219,23 +237,20 @@ class DiscountAdmin(admin.ModelAdmin):
             return f'{obj.value:g}%'
         return money(obj.value)
 
-    @admin.display(description='Status')
+    @display(description='Status', label={'Live': 'success', 'Inactive': 'warning'})
     def live_badge(self, obj):
-        live = obj.is_live()
-        color = '#138000' if live else '#999'
-        label = 'LIVE' if live else 'inactive'
-        return format_html('<b style="color:{}">{}</b>', color, label)
+        return 'Live' if obj.is_live() else 'Inactive'
 
 
 @admin.register(ShippingRate)
-class ShippingRateAdmin(admin.ModelAdmin):
+class ShippingRateAdmin(ModelAdmin):
     list_display = ('get_province_display', 'rate', 'is_active')
     list_editable = ('rate', 'is_active')
     list_display_links = ('get_province_display',)
 
 
 @admin.register(StoreSetting)
-class StoreSettingAdmin(admin.ModelAdmin):
+class StoreSettingAdmin(ModelAdmin):
     list_display = ('store_name', 'currency_code', 'default_shipping_fee',
                     'free_shipping_threshold', 'cod_enabled')
 
@@ -250,7 +265,7 @@ class StoreSettingAdmin(admin.ModelAdmin):
 # ---------------------------------------------------------------------------
 # Orders
 # ---------------------------------------------------------------------------
-class OrderItemInline(admin.TabularInline):
+class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 0
     autocomplete_fields = ('product', 'variant')
@@ -262,12 +277,19 @@ class OrderItemInline(admin.TabularInline):
 
 
 @admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(ModelAdmin):
     list_display = (
         'order_number', 'full_name', 'phone', 'city', 'total_display',
-        'status', 'payment_badge', 'created_at',
+        'status_badge', 'payment_badge', 'created_at',
     )
-    list_filter = ('status', 'payment_status', 'payment_method', 'province', 'created_at')
+    list_filter = (
+        ('status', ChoicesDropdownFilter),
+        ('payment_status', ChoicesDropdownFilter),
+        ('payment_method', ChoicesDropdownFilter),
+        ('province', ChoicesDropdownFilter),
+        ('created_at', RangeDateFilter),
+    )
+    list_filter_submit = True
     search_fields = ('order_number', 'full_name', 'phone', 'email')
     date_hierarchy = 'created_at'
     inlines = (OrderItemInline,)
@@ -293,21 +315,29 @@ class OrderAdmin(admin.ModelAdmin):
         ('Notes', {'fields': ('customer_note', 'admin_note')}),
     )
 
-    @admin.display(description='Total', ordering='total')
+    @display(description='Total', ordering='total')
     def total_display(self, obj):
         return money(obj.total)
 
-    @admin.display(description='Payment')
+    @display(description='Status', ordering='status', label={
+        'Pending': 'warning',
+        'Confirmed': 'info',
+        'Processing': 'info',
+        'Shipped': 'info',
+        'Delivered': 'success',
+        'Cancelled': 'danger',
+        'Returned': 'danger',
+    })
+    def status_badge(self, obj):
+        return obj.get_status_display()
+
+    @display(description='Payment', ordering='payment_status', label={
+        'Paid': 'success',
+        'Unpaid': 'danger',
+        'Refunded': 'warning',
+    })
     def payment_badge(self, obj):
-        colors = {
-            constants.PaymentStatus.PAID: '#138000',
-            constants.PaymentStatus.UNPAID: '#c0392b',
-            constants.PaymentStatus.REFUNDED: '#999',
-        }
-        return format_html(
-            '<b style="color:{}">{}</b>',
-            colors.get(obj.payment_status, '#000'), obj.get_payment_status_display(),
-        )
+        return obj.get_payment_status_display()
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
@@ -351,15 +381,33 @@ class OrderAdmin(admin.ModelAdmin):
         self.message_user(request, f'{n} order(s) marked delivered.')
 
 
-class CartItemInline(admin.TabularInline):
+class CartItemInline(TabularInline):
     model = CartItem
     extra = 0
     autocomplete_fields = ('product', 'variant')
 
 
 @admin.register(Cart)
-class CartAdmin(admin.ModelAdmin):
+class CartAdmin(ModelAdmin):
     list_display = ('__str__', 'user', 'item_count', 'is_active', 'updated_at')
     list_filter = ('is_active',)
     search_fields = ('session_key', 'user__username')
     inlines = (CartItemInline,)
+
+
+# ---------------------------------------------------------------------------
+# Re-skin the built-in auth admin so Users/Groups match the Unfold theme.
+# ---------------------------------------------------------------------------
+User = get_user_model()
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
+
+@admin.register(User)
+class UserAdmin(DjangoUserAdmin, ModelAdmin):
+    pass
+
+
+@admin.register(Group)
+class GroupAdmin(DjangoGroupAdmin, ModelAdmin):
+    pass

@@ -1,5 +1,6 @@
 asgiref==3.11.1
 Django==6.0.5
+django-unfold==0.97.0
 gunicorn==26.0.0
 packaging==26.2
 Pillow==11.3.0

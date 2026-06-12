@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+    {# ---- KPI cards ---- #}
+    {% if kpi_cards %}
+        <div class="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+            {% for card in kpi_cards %}
+                <div class="bg-white border border-base-200 flex flex-col p-6 relative rounded-default shadow-xs dark:bg-base-900 dark:border-base-800">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-base-500 dark:text-base-400">{{ card.title }}</span>
+                        <span class="material-symbols-outlined text-primary-600 dark:text-primary-500">{{ card.icon }}</span>
+                    </div>
+                    <span class="text-2xl font-semibold mt-3 text-base-900 dark:text-base-100">{{ card.value }}</span>
+                    <span class="text-xs mt-1 text-base-400 dark:text-base-500">{{ card.footer }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# ---- Recent orders ---- #}
+    {% if recent_orders %}
+        <div class="bg-white border border-base-200 mb-8 overflow-hidden rounded-default shadow-xs dark:bg-base-900 dark:border-base-800">
+            <div class="border-b border-base-200 px-6 py-4 dark:border-base-800">
+                <h2 class="font-semibold text-[15px] text-base-900 dark:text-base-100">{% trans "Recent orders" %}</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-base-500 dark:text-base-400">
+                            <th class="font-medium px-6 py-3">{% trans "Order" %}</th>
+                            <th class="font-medium px-6 py-3">{% trans "Customer" %}</th>
+                            <th class="font-medium px-6 py-3">{% trans "City" %}</th>
+                            <th class="font-medium px-6 py-3">{% trans "Total" %}</th>
+                            <th class="font-medium px-6 py-3">{% trans "Status" %}</th>
+                            <th class="font-medium px-6 py-3">{% trans "Payment" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in recent_orders %}
+                            <tr class="border-t border-base-100 dark:border-base-800">
+                                <td class="px-6 py-3">
+                                    <a href="{% url 'admin:store_order_change' o.pk %}" class="font-medium text-primary-600 dark:text-primary-400">{{ o.order_number }}</a>
+                                </td>
+                                <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.full_name }}</td>
+                                <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.city }}</td>
+                                <td class="px-6 py-3 text-base-700 dark:text-base-300">Rs&nbsp;{{ o.total|floatformat:0 }}</td>
+                                <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.get_status_display }}</td>
+                                <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.get_payment_status_display }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {# ---- Standard app list (kept) ---- #}
+    <div class="flex flex-col lg:flex-row lg:gap-8">
+        <div class="grow">
+            {% include "unfold/helpers/app_list_default.html" %}
+        </div>
+
+        {% include "unfold/helpers/history.html" %}
+    </div>
+{% endblock %}
