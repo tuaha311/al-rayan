@@ -1,0 +1,45 @@
+{% load static %}
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">
+          <img src="{% static 'images/logo.svg' %}" alt=""/> Al Rayan
+        </div>
+        <p class="muted" style="color:#a8a29e;max-width:34ch">
+          A Pakistani cloth house for premium unstitched men's fabric — woven for
+          comfort, finished for occasion. Cash on delivery, nationwide.
+        </p>
+      </div>
+      <div>
+        <h5>Shop</h5>
+        <a href="{% url 'store:product_list' %}">All Fabric</a>
+        {% for cat in nav_categories %}
+          {% for child in cat.children.all %}
+            {% if child.is_active %}
+              <a href="{% url 'store:product_list' %}?category={{ child.slug }}">{{ child.name }}</a>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        <a href="{% url 'store:product_list' %}?on_sale=1">On Sale</a>
+      </div>
+      <div>
+        <h5>Help</h5>
+        <a href="{% url 'store:cart' %}">Your Cart</a>
+        <a href="#">Delivery &amp; Returns</a>
+        <a href="#">Size &amp; Length Guide</a>
+        <a href="#">Track Order</a>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        {% if store_settings.contact_phone %}<a href="tel:{{ store_settings.contact_phone }}">{{ store_settings.contact_phone }}</a>{% endif %}
+        {% if store_settings.contact_email %}<a href="mailto:{{ store_settings.contact_email }}">{{ store_settings.contact_email }}</a>{% endif %}
+        <p class="muted" style="color:#a8a29e;margin-top:10px">Cash on Delivery available all over Pakistan.</p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© {% now "Y" %} {{ store_settings.store_name }}. All rights reserved.</span>
+      <span>Prices in PKR · Cash on Delivery</span>
+    </div>
+  </div>
+</footer>

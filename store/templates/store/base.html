@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}{{ store_settings.store_name }} — Premium Unstitched Fabric{% endblock %}</title>
+  <meta name="description" content="{% block description %}Premium unstitched men's fabric — khadi, wash & wear, karandi, boski and more. Cash on delivery across Pakistan.{% endblock %}"/>
+
+  <link rel="icon" href="{% static 'images/logo.svg' %}" type="image/svg+xml"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'css/store.css' %}"/>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% include "store/partials/header.html" %}
+  {% include "store/partials/messages.html" %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "store/partials/footer.html" %}
+  <script src="{% static 'js/store.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

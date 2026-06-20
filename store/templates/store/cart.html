@@ -1,0 +1,82 @@
+{% extends "store/base.html" %}
+{% load store_extras %}
+
+{% block title %}Your Cart — {{ store_settings.store_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><span class="eyebrow">Cart</span><h2>Your shopping cart</h2></div></div>
+
+    {% if cart.is_empty %}
+      <div class="empty">
+        <div class="big">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p class="muted">Browse our unstitched collection and add your favourites.</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary" style="margin-top:10px">Start shopping</a>
+      </div>
+    {% else %}
+      <div class="cols">
+        <div class="panel">
+          <div class="panel-body">
+            {% for line in cart %}
+              <div class="cart-item">
+                <a class="thumb" href="{% url 'store:product_detail' line.product.slug %}">
+                  {% if line.product.primary_image %}
+                    <img src="{{ line.product.primary_image.url }}" alt="{{ line.product.name }}"/>
+                  {% else %}
+                    <div class="thumb-fallback">
+                      {% for v in line.product.variants.all|slice:":4" %}<span style="background:{{ v.color.hex_code|default:'#0b3d2e' }}"></span>{% endfor %}
+                    </div>
+                  {% endif %}
+                </a>
+                <div>
+                  <a href="{% url 'store:product_detail' line.product.slug %}"><strong>{{ line.product.name }}</strong></a>
+                  <div class="muted" style="font-size:13px">
+                    {% if line.color_name %}Colour: {{ line.color_name }}{% endif %}
+                    {% if line.additional_meters %} · +{{ line.additional_meters|meters }} m length{% endif %}
+                  </div>
+                  <div class="muted" style="font-size:13px">{{ line.unit_price|rs }} each</div>
+                  <div style="display:flex;gap:14px;align-items:center;margin-top:10px">
+                    <form method="post" action="{% url 'store:cart_update' %}" class="qty-form" style="display:flex;align-items:center;gap:0">
+                      {% csrf_token %}
+                      <input type="hidden" name="key" value="{{ line.key }}"/>
+                      <div class="qty">
+                        <button type="button" data-step="-1">−</button>
+                        <input type="text" name="quantity" value="{{ line.quantity }}" inputmode="numeric"/>
+                        <button type="button" data-step="1">+</button>
+                      </div>
+                      <button type="submit" class="btn btn-ghost btn-sm" style="margin-left:8px">Update</button>
+                    </form>
+                    <form method="post" action="{% url 'store:cart_remove' %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="key" value="{{ line.key }}"/>
+                      <button type="submit" class="btn btn-sm" style="background:transparent;color:#b91c1c">Remove</button>
+                    </form>
+                  </div>
+                </div>
+                <div style="text-align:right"><strong>{{ line.line_total|rs }}</strong></div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="panel summary">
+          <div class="panel-head">Order summary</div>
+          <div class="panel-body">
+            <div class="row"><span>Subtotal</span><span>{{ cart.subtotal|rs }}</span></div>
+            <div class="row"><span>Shipping</span><span class="muted">Calculated at checkout</span></div>
+            {% if store_settings.free_shipping_threshold and cart.subtotal >= store_settings.free_shipping_threshold %}
+              <div class="row" style="color:#047857"><span>Free shipping</span><span>✓ Unlocked</span></div>
+            {% endif %}
+            <div class="row total"><span>Total</span><span>{{ cart.subtotal|rs }}+</span></div>
+            <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block" style="margin-top:16px">Proceed to checkout</a>
+            <a href="{% url 'store:product_list' %}" class="btn btn-ghost btn-block" style="margin-top:10px">Continue shopping</a>
+            <div class="cod-banner" style="margin-top:16px">💵 Cash on Delivery available</div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

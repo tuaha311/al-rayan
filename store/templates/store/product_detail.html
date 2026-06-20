@@ -1,0 +1,133 @@
+{% extends "store/base.html" %}
+{% load static store_extras %}
+
+{% block title %}{{ product.name }} — {{ store_settings.store_name }}{% endblock %}
+{% block description %}{{ product.short_description|default:product.name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <p class="meta" style="margin-bottom:18px">
+      <a href="{% url 'store:home' %}" class="muted">Home</a> ›
+      <a href="{% url 'store:product_list' %}" class="muted">Shop</a> ›
+      <a href="{% url 'store:product_list' %}?category={{ product.category.slug }}" class="muted">{{ product.category.name }}</a>
+    </p>
+
+    <div class="pdp">
+      <!-- Gallery -->
+      <div class="gallery">
+        <div class="main" id="gallery-main">
+          {% if product.primary_image %}
+            <img src="{{ product.primary_image.url }}" alt="{{ product.name }}"/>
+          {% else %}
+            <div class="thumb-fallback" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)">
+              {% for v in variants|slice:":9" %}
+                <span style="background:{{ v.color.hex_code|default:'#0b3d2e' }}"></span>
+              {% empty %}
+                <span style="background:#047857"></span>
+              {% endfor %}
+            </div>
+            <div class="thumb-logo"><span>{{ product.fabric.name|default:product.name }}</span></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Buy box -->
+      <div>
+        <span class="meta">{{ product.fabric.name }}{% if product.season %} · {{ product.season.name }}{% endif %} · SKU {{ product.sku }}</span>
+        <h1>{{ product.name }}</h1>
+
+        <div class="price-row" style="margin:10px 0 6px">
+          <span class="price" id="live-price">{{ product.final_price|rs }}</span>
+          {% if product.is_on_sale %}
+            <span class="price-old">{{ product.base_price|rs }}</span>
+            <span class="price-off">Save {{ product.discount_amount|rs }} ({{ product.savings_percentage }}%)</span>
+          {% endif %}
+        </div>
+        {% if product.sold_by_meters %}
+          <div class="muted" style="font-size:13px">Base price for {{ product.base_meters|meters }} m{% if product.additional_meter_price %} · +{{ product.additional_meter_price|rs }}/extra metre{% endif %}</div>
+        {% endif %}
+
+        {% if product.short_description %}<p class="lead">{{ product.short_description }}</p>{% endif %}
+
+        <form method="post" action="{% url 'store:cart_add' %}" id="add-form">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.id }}"/>
+
+          {% if variants %}
+          <div class="option-block">
+            <label class="h">Colour: <span id="chosen-color">{{ variants.0.color.name }}</span></label>
+            <div class="opt-colors">
+              {% for v in variants %}
+                <label class="opt-color" title="{{ v.color.name }}">
+                  <input type="radio" name="variant_id" value="{{ v.id }}" data-name="{{ v.color.name }}"
+                         {% if forloop.first %}checked{% endif %}/>
+                  <span class="dot" style="background:{{ v.color.hex_code|default:'#999' }}"></span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if meter_options %}
+          <div class="option-block">
+            <label class="h" for="meters-select">Add extra length</label>
+            <div class="meter-row">
+              <select class="field-input" name="additional_meters" id="meters-select">
+                {% for m in meter_options %}
+                  <option value="{{ m }}">{% if m == 0 %}Standard ({{ product.base_meters|meters }} m){% else %}+{{ m|meters }} m{% endif %}</option>
+                {% endfor %}
+              </select>
+              <span class="muted" style="font-size:13px">Tailor-ready unstitched fabric</span>
+            </div>
+          </div>
+          {% else %}
+            <input type="hidden" name="additional_meters" value="0"/>
+          {% endif %}
+
+          <div class="option-block">
+            <label class="h">Quantity</label>
+            <div class="qty">
+              <button type="button" data-step="-1" aria-label="Decrease">−</button>
+              <input type="text" name="quantity" id="qty-input" value="1" inputmode="numeric"/>
+              <button type="button" data-step="1" aria-label="Increase">+</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary btn-block" style="flex:1">Add to cart</button>
+            <button type="submit" name="buy_now" value="1" class="btn btn-dark">Buy now</button>
+          </div>
+        </form>
+
+        <div class="trust">
+          <div>🚚 Cash on Delivery</div>
+          <div>📦 Ships nationwide</div>
+          {% if product.in_stock %}<div style="color:#047857">● In stock</div>{% else %}<div style="color:#b91c1c">● Out of stock</div>{% endif %}
+        </div>
+
+        {% if product.description %}<p class="lead" style="margin-top:22px">{{ product.description }}</p>{% endif %}
+
+        <table class="spec-table">
+          <tr><th>Fabric</th><td>{{ product.fabric.name|default:"—" }}</td></tr>
+          {% if product.season %}<tr><th>Season</th><td>{{ product.season.name }}</td></tr>{% endif %}
+          {% if product.sold_by_meters %}<tr><th>Base length</th><td>{{ product.base_meters|meters }} metres</td></tr>{% endif %}
+          <tr><th>Category</th><td>{{ product.category.name }}</td></tr>
+          <tr><th>Available colours</th><td>{{ variants|length }}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    {% if related %}
+    <div style="margin-top:56px">
+      <div class="section-head"><div><span class="eyebrow">You may also like</span><h2>Related fabric</h2></div></div>
+      <div class="product-grid">
+        {% for product in related %}{% include "store/partials/product_card.html" %}{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{{ price_data|json_script:"price-data" }}
+{% endblock %}

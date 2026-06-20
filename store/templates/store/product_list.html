@@ -1,0 +1,126 @@
+{% extends "store/base.html" %}
+{% load store_extras %}
+
+{% block title %}{% if category %}{{ category.name }}{% else %}Shop{% endif %} — {{ store_settings.store_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head" style="margin-bottom:8px">
+      <div>
+        <span class="eyebrow">{% if active.on_sale %}Offers{% else %}Collection{% endif %}</span>
+        <h2>{% if category %}{{ category.name }}{% elif active.q %}Results for “{{ active.q }}”{% else %}Shop all fabric{% endif %}</h2>
+      </div>
+    </div>
+
+    <div class="shop-layout">
+      <!-- Filters -->
+      <aside class="filters">
+        <h4>Category</h4>
+        <ul class="filter-list">
+          <li><a href="{% url 'store:product_list' %}{% qs category='__clear__' %}" class="{% if not active.category %}active{% endif %}">All</a></li>
+          {% for cat in categories %}
+            {% if cat.parent %}
+              <li><a href="{% url 'store:product_list' %}{% qs category=cat.slug %}" class="{% if active.category == cat.slug %}active{% endif %}">{{ cat.name }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+
+        <h4>Fabric</h4>
+        <ul class="filter-list">
+          {% for f in fabrics %}
+            <li><a href="{% url 'store:product_list' %}{% if active.fabric == f.slug %}{% qs fabric='__clear__' %}{% else %}{% qs fabric=f.slug %}{% endif %}" class="{% if active.fabric == f.slug %}active{% endif %}">{{ f.name }}</a></li>
+          {% endfor %}
+        </ul>
+
+        <h4>Season</h4>
+        <ul class="filter-list">
+          {% for s in seasons %}
+            <li><a href="{% url 'store:product_list' %}{% if active.season == s.slug %}{% qs season='__clear__' %}{% else %}{% qs season=s.slug %}{% endif %}" class="{% if active.season == s.slug %}active{% endif %}">{{ s.name }}</a></li>
+          {% endfor %}
+        </ul>
+
+        <h4>Colour</h4>
+        <div class="color-grid">
+          {% for c in colors %}
+            <a href="{% url 'store:product_list' %}{% if active.color == c.slug %}{% qs color='__clear__' %}{% else %}{% qs color=c.slug %}{% endif %}"
+               class="{% if active.color == c.slug %}active{% endif %}" title="{{ c.name }}"
+               style="background:{{ c.hex_code|default:'#ccc' }}"></a>
+          {% endfor %}
+        </div>
+
+        <h4 style="margin-top:18px">Offers</h4>
+        <ul class="filter-list">
+          <li><a href="{% url 'store:product_list' %}{% if active.on_sale %}{% qs on_sale='__clear__' %}{% else %}{% qs on_sale='1' %}{% endif %}" class="{% if active.on_sale %}active{% endif %}">On sale only</a></li>
+        </ul>
+      </aside>
+
+      <!-- Results -->
+      <div>
+        <div class="toolbar">
+          <span class="count">{{ total_count }} product{{ total_count|pluralize }}</span>
+          <form method="get" id="sort-form">
+            {% if active.category %}<input type="hidden" name="category" value="{{ active.category }}">{% endif %}
+            {% if active.fabric %}<input type="hidden" name="fabric" value="{{ active.fabric }}">{% endif %}
+            {% if active.season %}<input type="hidden" name="season" value="{{ active.season }}">{% endif %}
+            {% if active.color %}<input type="hidden" name="color" value="{{ active.color }}">{% endif %}
+            {% if active.q %}<input type="hidden" name="q" value="{{ active.q }}">{% endif %}
+            {% if active.on_sale %}<input type="hidden" name="on_sale" value="1">{% endif %}
+            <label class="muted" style="font-size:13px;margin-right:6px">Sort</label>
+            <select class="sort" name="sort" onchange="document.getElementById('sort-form').submit()">
+              <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+              <option value="price-low" {% if sort == 'price-low' %}selected{% endif %}>Price: low to high</option>
+              <option value="price-high" {% if sort == 'price-high' %}selected{% endif %}>Price: high to low</option>
+              <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
+            </select>
+          </form>
+        </div>
+
+        {% if active %}
+          <div class="chips">
+            {% if active.category %}<span class="chip">{{ category.name }} <a href="{% url 'store:product_list' %}{% qs category='__clear__' %}">✕</a></span>{% endif %}
+            {% if active.fabric %}<span class="chip">{{ active.fabric|title }} <a href="{% url 'store:product_list' %}{% qs fabric='__clear__' %}">✕</a></span>{% endif %}
+            {% if active.season %}<span class="chip">{{ active.season|title }} <a href="{% url 'store:product_list' %}{% qs season='__clear__' %}">✕</a></span>{% endif %}
+            {% if active.color %}<span class="chip">{{ active.color|title }} <a href="{% url 'store:product_list' %}{% qs color='__clear__' %}">✕</a></span>{% endif %}
+            {% if active.q %}<span class="chip">“{{ active.q }}” <a href="{% url 'store:product_list' %}{% qs q='__clear__' %}">✕</a></span>{% endif %}
+            {% if active.on_sale %}<span class="chip">On sale <a href="{% url 'store:product_list' %}{% qs on_sale='__clear__' %}">✕</a></span>{% endif %}
+          </div>
+        {% endif %}
+
+        {% if products %}
+          <div class="product-grid">
+            {% for product in products %}
+              {% include "store/partials/product_card.html" %}
+            {% endfor %}
+          </div>
+
+          {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+              {% if page_obj.has_previous %}
+                <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">‹ Prev</a>
+              {% endif %}
+              {% for n in page_obj.paginator.page_range %}
+                {% if n == page_obj.number %}
+                  <span class="current">{{ n }}</span>
+                {% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}
+                  <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ n }}">{{ n }}</a>
+                {% endif %}
+              {% endfor %}
+              {% if page_obj.has_next %}
+                <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next ›</a>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="empty">
+            <div class="big">🧵</div>
+            <h3>No products match your filters</h3>
+            <p class="muted">Try clearing a filter or browse the full collection.</p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary" style="margin-top:10px">Browse all fabric</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

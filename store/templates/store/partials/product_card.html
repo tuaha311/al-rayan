@@ -1,0 +1,41 @@
+{% load store_extras %}
+<a class="product-card" href="{% url 'store:product_detail' product.slug %}">
+  <div class="product-thumb">
+    <div class="badge-row">
+      {% if product.is_on_sale %}<span class="badge badge-sale">-{{ product.savings_percentage }}%</span>{% endif %}
+      {% if product.is_featured %}<span class="badge badge-new">Featured</span>{% endif %}
+    </div>
+    {% if product.primary_image %}
+      <img src="{{ product.primary_image.url }}" alt="{{ product.name }}" loading="lazy"/>
+    {% else %}
+      <div class="thumb-fallback">
+        {% for v in product.variants.all|slice:":4" %}
+          <span style="background:{{ v.color.hex_code|default:'#0b3d2e' }}"></span>
+        {% empty %}
+          <span style="background:#047857"></span><span style="background:#065f46"></span>
+          <span style="background:#059669"></span><span style="background:#064e3b"></span>
+        {% endfor %}
+      </div>
+      <div class="thumb-logo"><span>{{ product.fabric.name|default:product.name }}</span></div>
+    {% endif %}
+  </div>
+  <div class="product-body">
+    <span class="product-meta">{{ product.fabric.name }}{% if product.season %} · {{ product.season.name }}{% endif %}</span>
+    <h3 class="product-name">{{ product.name }}</h3>
+    {% if product.variants.all %}
+      <div class="swatch-row">
+        {% for v in product.variants.all|slice:":5" %}
+          <span class="swatch" title="{{ v.color.name }}" style="background:{{ v.color.hex_code|default:'#999' }}"></span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <div class="price-row">
+      {% if product.is_on_sale %}
+        <span class="price">{{ product.final_price|rs }}</span>
+        <span class="price-old">{{ product.base_price|rs }}</span>
+      {% else %}
+        <span class="price">{{ product.base_price|rs }}</span>
+      {% endif %}
+    </div>
+  </div>
+</a>

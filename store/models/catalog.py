@@ -71,6 +71,19 @@ class Category(TimeStampedModel):
     def self_and_ancestor_ids(self):
         return [c.pk for c in self.get_ancestors(include_self=True)]
 
+    def descendant_and_self_ids(self):
+        """All category ids at/under this node (breadth-first over children)."""
+        ids = [self.pk]
+        frontier = [self.pk]
+        seen = {self.pk}
+        while frontier:
+            children = Category.objects.filter(
+                parent_id__in=frontier).values_list('pk', flat=True)
+            frontier = [c for c in children if c not in seen]
+            seen.update(frontier)
+            ids.extend(frontier)
+        return ids
+
 
 class Fabric(TimeStampedModel):
     """Cloth material/quality — khadi, cotton, wash & wear, karandi, …"""

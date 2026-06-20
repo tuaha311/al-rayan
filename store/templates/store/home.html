@@ -1,0 +1,90 @@
+{% extends "store/base.html" %}
+{% load static store_extras %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div>
+      <span class="eyebrow">Pakistani Cloth House</span>
+      <h1>Unstitched fabric, woven for the occasion.</h1>
+      <p>Premium khadi, wash &amp; wear, karandi and boski suits — finished to a
+         tailor-ready standard. Choose your colour, extend the length, and pay
+         cash on delivery anywhere in Pakistan.</p>
+      <div class="cta">
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary">Shop the collection</a>
+        <a href="{% url 'store:product_list' %}?on_sale=1" class="btn btn-ghost">View offers</a>
+      </div>
+      <div class="trust" style="margin-top:28px">
+        <div>✓ Cash on Delivery</div>
+        <div>✓ Nationwide shipping</div>
+        <div>✓ Premium fabric</div>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="swatches">
+        <span style="background:#0b3d2e"></span><span style="background:#36454f"></span><span style="background:#5a1a22"></span>
+        <span style="background:#d8c3a5"></span><span style="background:#1f2a44"></span><span style="background:#6b7a3a"></span>
+        <span style="background:#9c5b34"></span><span style="background:#f3e9d2"></span><span style="background:#4a6a8a"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if shop_categories %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div><span class="eyebrow">Browse</span><h2>Shop by category</h2></div>
+      <a href="{% url 'store:product_list' %}" class="btn btn-ghost btn-sm">All fabric →</a>
+    </div>
+    <div class="cat-strip">
+      {% for cat in shop_categories %}
+        <a class="cat-card" href="{% url 'store:product_list' %}?category={{ cat.slug }}">
+          <h3>{{ cat.name }}</h3>
+          <div class="count">{{ cat.products.count }} product{{ cat.products.count|pluralize }}</div>
+          <span class="arrow">Explore →</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head">
+      <div><span class="eyebrow">Handpicked</span><h2>Featured fabric</h2></div>
+      <a href="{% url 'store:product_list' %}" class="btn btn-ghost btn-sm">See all →</a>
+    </div>
+    <div class="product-grid">
+      {% for product in featured %}
+        {% include "store/partials/product_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if on_sale %}
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head">
+      <div><span class="eyebrow" style="color:#b45309">Limited time</span><h2>On sale now</h2></div>
+      <a href="{% url 'store:product_list' %}?on_sale=1" class="btn btn-ghost btn-sm">All offers →</a>
+    </div>
+    <div class="product-grid">
+      {% for product in on_sale %}
+        {% include "store/partials/product_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section-tight" style="padding-bottom:64px">
+  <div class="container">
+    <div class="cod-banner" style="justify-content:center;font-size:15px">
+      🚚 &nbsp;Free delivery on orders over {{ store_settings.free_shipping_threshold|rs }} · Cash on Delivery across Pakistan
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% load static %}
+<header class="site-header">
+  <div class="container">
+    <div class="bar">
+      <a href="{% url 'store:home' %}" class="brand">
+        <img src="{% static 'images/logo.svg' %}" alt="{{ store_settings.store_name }}"/>
+        <span>Al&nbsp;<span class="sub">Rayan</span></span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="{% url 'store:product_list' %}">Shop All</a>
+        {% for cat in nav_categories %}
+          {% for child in cat.children.all %}
+            {% if child.is_active %}
+              <a href="{% url 'store:product_list' %}?category={{ child.slug }}">{{ child.name }}</a>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        <a href="{% url 'store:product_list' %}?on_sale=1">Sale</a>
+      </nav>
+
+      <div class="header-actions">
+        <form class="search-mini" action="{% url 'store:product_list' %}" method="get" role="search">
+          <button type="submit" aria-label="Search">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+          <input type="text" name="q" placeholder="Search fabrics…" value="{{ request.GET.q }}"/>
+        </form>
+
+        <a href="{% url 'store:cart' %}" class="cart-link">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>Cart</span>
+          {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

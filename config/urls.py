@@ -25,7 +25,9 @@ urlpatterns = [
     re_path(r'^_next/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'static/_next'}),
     re_path(r'^images/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'static/images'}),
     re_path(r'^videos/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'static/videos'}),
-    path('', include('home.urls')),
+    # The Al Rayan storefront owns the site root. The legacy XECOTech landing
+    # (home app) is kept in the repo but unlinked from routing.
+    path('', include('store.urls')),
 ]
 
 # Serve user-uploaded media files during development.

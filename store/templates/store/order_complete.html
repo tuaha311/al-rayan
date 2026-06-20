@@ -1,0 +1,40 @@
+{% extends "store/base.html" %}
+{% load store_extras %}
+
+{% block title %}Order confirmed — {{ store_settings.store_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:760px">
+    <div class="panel" style="overflow:hidden">
+      <div class="panel-body" style="text-align:center;padding:40px 24px;background:linear-gradient(180deg,var(--emerald-50),#fff)">
+        <div style="font-size:54px">✅</div>
+        <h2 style="margin:6px 0">Thank you, {{ order.full_name|cut:" "|default:order.full_name }}!</h2>
+        <p class="muted">Your order <strong>{{ order.order_number }}</strong> has been placed.</p>
+        <p class="muted">We’ll call you on <strong>{{ order.phone }}</strong> to confirm. Pay cash on delivery.</p>
+      </div>
+      <div class="panel-body">
+        <h4 style="font-family:'Inter';text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--muted)">Order summary</h4>
+        {% for item in order.items.all %}
+          <div class="row" style="display:flex;justify-content:space-between;padding:7px 0">
+            <span>{{ item.quantity }} × {{ item.product_name }}{% if item.color_name %} <span class="muted">({{ item.color_name }})</span>{% endif %}{% if item.additional_meters %} <span class="muted">+{{ item.additional_meters|meters }} m</span>{% endif %}</span>
+            <span>{{ item.line_total|rs }}</span>
+          </div>
+        {% endfor %}
+        <div class="row" style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line);margin-top:8px;padding-top:12px">
+          <span>Subtotal</span><span>{{ order.subtotal|rs }}</span>
+        </div>
+        {% if order.discount_total %}<div class="row" style="display:flex;justify-content:space-between;padding:7px 0;color:#047857"><span>Discount</span><span>− {{ order.discount_total|rs }}</span></div>{% endif %}
+        <div class="row" style="display:flex;justify-content:space-between;padding:7px 0"><span>Shipping</span><span>{% if order.shipping_fee %}{{ order.shipping_fee|rs }}{% else %}Free{% endif %}</span></div>
+        <div class="row total" style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--line);margin-top:6px;font-size:19px;font-weight:800"><span>Total (COD)</span><span>{{ order.total|rs }}</span></div>
+
+        <div style="margin-top:18px">
+          <strong>Delivery to:</strong>
+          <p class="muted" style="margin:4px 0">{{ order.address_line }}, {{ order.city }}, {{ order.get_province_display }}{% if order.postal_code %} — {{ order.postal_code }}{% endif %}</p>
+        </div>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary" style="margin-top:10px">Continue shopping</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "store/base.html" %}
+{% load store_extras %}
+
+{% block title %}Checkout — {{ store_settings.store_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><span class="eyebrow">Checkout</span><h2>Delivery details</h2></div></div>
+
+    <form method="post" action="{% url 'store:checkout' %}">
+      {% csrf_token %}
+      <div class="cols">
+        <div class="panel">
+          <div class="panel-head">Where should we deliver?</div>
+          <div class="panel-body">
+            <div class="cod-banner" style="margin-bottom:18px">💵 Payment method: Cash on Delivery — pay when your order arrives.</div>
+
+            {% if form.non_field_errors %}<div class="field"><p class="errorlist">{{ form.non_field_errors }}</p></div>{% endif %}
+
+            <div class="form-grid">
+              <div class="field full">
+                <label for="{{ form.full_name.id_for_label }}">Full name</label>
+                {{ form.full_name }}{{ form.full_name.errors }}
+              </div>
+              <div class="field">
+                <label for="{{ form.phone.id_for_label }}">Phone</label>
+                {{ form.phone }}{{ form.phone.errors }}
+              </div>
+              <div class="field">
+                <label for="{{ form.email.id_for_label }}">Email <span class="muted">(optional)</span></label>
+                {{ form.email }}{{ form.email.errors }}
+              </div>
+              <div class="field full">
+                <label for="{{ form.address_line.id_for_label }}">Delivery address</label>
+                {{ form.address_line }}{{ form.address_line.errors }}
+              </div>
+              <div class="field">
+                <label for="{{ form.city.id_for_label }}">City</label>
+                {{ form.city }}{{ form.city.errors }}
+              </div>
+              <div class="field">
+                <label for="{{ form.province.id_for_label }}">Province</label>
+                {{ form.province }}{{ form.province.errors }}
+              </div>
+              <div class="field">
+                <label for="{{ form.postal_code.id_for_label }}">Postal code <span class="muted">(optional)</span></label>
+                {{ form.postal_code }}{{ form.postal_code.errors }}
+              </div>
+              <div class="field full">
+                <label for="{{ form.customer_note.id_for_label }}">Order note <span class="muted">(optional)</span></label>
+                {{ form.customer_note }}{{ form.customer_note.errors }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel summary">
+          <div class="panel-head">Your order</div>
+          <div class="panel-body">
+            {% for line in cart %}
+              <div class="row">
+                <span>{{ line.quantity }} × {{ line.product.name }}{% if line.color_name %} <span class="muted">({{ line.color_name }})</span>{% endif %}</span>
+                <span>{{ line.line_total|rs }}</span>
+              </div>
+            {% endfor %}
+            <div class="row" style="border-top:1px solid var(--line);margin-top:8px;padding-top:12px">
+              <span>Subtotal</span><span>{{ cart.subtotal|rs }}</span>
+            </div>
+            <div class="row"><span>Shipping</span><span id="ship-amount" class="muted">Select province</span></div>
+            <div class="row total"><span>Total</span><span id="grand-total">{{ cart.subtotal|rs }}</span></div>
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top:16px">Place order (COD)</button>
+            <a href="{% url 'store:cart' %}" class="btn btn-ghost btn-block" style="margin-top:10px">Back to cart</a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+{{ shipping_rates|json_script:"shipping-rates" }}
+<script id="checkout-data" type="application/json">{"subtotal": "{{ cart.subtotal }}", "freeThreshold": "{{ store_settings.free_shipping_threshold }}", "defaultFee": "{{ store_settings.default_shipping_fee }}"}</script>
+{% endblock %}
