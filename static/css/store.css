@@ -72,11 +72,16 @@ body::before {
   inset: 0;
   z-index: -2;
   pointer-events: none;
-  background:
+  /* background:
     radial-gradient(38rem 30rem at 8% -6%, rgba(5, 150, 105, .16), transparent 60%),
     radial-gradient(34rem 28rem at 100% 4%, rgba(201, 162, 39, .14), transparent 58%),
     radial-gradient(40rem 34rem at 50% 108%, rgba(4, 120, 87, .12), transparent 60%),
-    linear-gradient(180deg, rgba(251, 250, 248, .74), rgba(250, 249, 247, .8));
+    linear-gradient(180deg, rgba(251, 250, 248, .74), rgba(250, 249, 247, .8)); */
+    background:
+    radial-gradient(38rem 30rem at 8% -6%, rgba(5, 150, 105, 0.08), transparent 60%),
+    radial-gradient(34rem 28rem at 100% 4%, rgba(201, 162, 39, 0.07), transparent 58%),
+    radial-gradient(40rem 34rem at 50% 108%, rgba(4, 120, 87, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(251, 250, 248, 0.92), rgba(250, 249, 247, 0.95));
 }
 
 /* Reusable glass surface — apply the visual language consistently. */
