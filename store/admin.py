@@ -252,7 +252,7 @@ class ShippingRateAdmin(ModelAdmin):
 @admin.register(StoreSetting)
 class StoreSettingAdmin(ModelAdmin):
     list_display = ('store_name', 'currency_code', 'default_shipping_fee',
-                    'free_shipping_threshold', 'cod_enabled')
+                    'free_shipping_threshold', 'cod_enabled', 'contact_phone', 'contact_email')
 
     def has_add_permission(self, request):
         # Singleton — only ever one row.

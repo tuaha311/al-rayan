@@ -15,6 +15,10 @@
   {% block head %}{% endblock %}
 </head>
 <body>
+  <canvas id="silk-bg" aria-hidden="true"
+          data-frame-url="{% static 'scrolls/ezgif-frame-' %}"></canvas>
+  <script src="{% static 'js/silk-bg.js' %}" defer></script>
+
   {% include "store/partials/header.html" %}
   {% include "store/partials/messages.html" %}
 
