@@ -188,7 +188,7 @@ UNFOLD = {
     'SITE_HEADER': 'Al Rayan',
     'SITE_SUBHEADER': 'Cloth House — Store management',
     'SITE_SYMBOL': 'checkroom',  # Material Symbols icon used as a fallback mark.
-    'SITE_LOGO': lambda request: static('images/logo.svg'),
+    'SITE_LOGO': lambda request: static('images/logo-transparent.png'),
     'SHOW_HISTORY': True,
     'SHOW_VIEW_ON_SITE': False,
     'THEME': None,  # let the user toggle light/dark.

@@ -1,21 +1,20 @@
 {% load static %}
 <header class="site-header">
-  <div class="container">
+  <div style="padding-left: 2rem; padding-right: 2rem;">
     <div class="bar">
       <a href="{% url 'store:home' %}" class="brand">
-        <img src="{% static 'images/logo.svg' %}" alt="{{ store_settings.store_name }}"/>
-        <span>Al&nbsp;<span class="sub">Rayan</span></span>
+        <img src="{% static 'images/logo-transparent.png' %}" alt="{{ store_settings.store_name }}"/>
+        <span class="brand-text">AL-RAYAN</span>
       </a>
 
       <nav class="main-nav">
         <a href="{% url 'store:product_list' %}">Shop All</a>
-        {% for cat in nav_categories %}
-          {% for child in cat.children.all %}
-            {% if child.is_active %}
-              <a href="{% url 'store:product_list' %}?category={{ child.slug }}">{{ child.name }}</a>
-            {% endif %}
-          {% endfor %}
-        {% endfor %}
+        <a href="{% url 'store:product_list' %}?fabric=wash-wear">Wash n Wear</a>
+        <a href="{% url 'store:product_list' %}?fabric=cotton">Cotton</a>
+        <a href="{% url 'store:product_list' %}?fabric=boski">Boski</a>
+        <a href="{% url 'store:product_list' %}?fabric=latha">Latha</a>
+        <a href="{% url 'store:product_list' %}?fabric=karandi">Karandi</a>
+        <a href="{% url 'store:product_list' %}?fabric=embroidered">Embroidered</a>
         <a href="{% url 'store:product_list' %}?on_sale=1">Sale</a>
       </nav>
 

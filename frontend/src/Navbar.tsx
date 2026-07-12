@@ -3,9 +3,14 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const LINKS = [
-  { label: "Experties", href: "/expertise/" },
-  { label: "Blogs", href: "#" },
-  { label: "Contact", href: "/contact/" },
+  { label: "Shop All", href: "/shop/" },
+  { label: "Wash n Wear", href: "/shop/?fabric=wash-wear" },
+  { label: "Cotton", href: "/shop/?fabric=cotton" },
+  { label: "Boski", href: "/shop/?fabric=boski" },
+  { label: "Latha", href: "/shop/?fabric=latha" },
+  { label: "Karandi", href: "/shop/?fabric=karandi" },
+  { label: "Embroidered", href: "/shop/?fabric=embroidered" },
+  { label: "Sale", href: "/shop/?on_sale=1" },
 ]
 
 function Logo() {
@@ -17,7 +22,7 @@ function Logo() {
       transition={{ type: "spring", stiffness: 400, damping: 10 }}
     >
       <img
-        src="/images/logo.svg"
+        src="/images/logo-transparent.png"
         alt="XECOTECH logo"
         className="size-10 group-hover:drop-shadow-lg transition-all duration-300"
         style={{ filter: "url(#logo-glow)" }}
