@@ -14,8 +14,16 @@
     </div>
 
     <div class="shop-layout">
-      <!-- Filters -->
-      <aside class="filters">
+      <!-- Filters. A <details> so phones get a collapsed panel instead of a
+           screen-and-a-half of links above the first product; `open` in the
+           markup keeps desktop (and no-JS) behaviour unchanged. -->
+      <details class="filters" id="filters" open>
+        <summary class="filters-summary">
+          <span>Filters</span>
+          {% if active %}<span class="n">{{ active|length }}</span>{% endif %}
+          <svg class="icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+
         <h4>Category</h4>
         <ul class="filter-list">
           <li><a href="{% url 'store:product_list' %}{% qs category='__clear__' %}" class="{% if not active.category %}active{% endif %}">All</a></li>
@@ -53,7 +61,7 @@
         <ul class="filter-list">
           <li><a href="{% url 'store:product_list' %}{% if active.on_sale %}{% qs on_sale='__clear__' %}{% else %}{% qs on_sale='1' %}{% endif %}" class="{% if active.on_sale %}active{% endif %}">On sale only</a></li>
         </ul>
-      </aside>
+      </details>
 
       <!-- Results -->
       <div>

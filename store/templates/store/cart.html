@@ -30,32 +30,32 @@
                     </div>
                   {% endif %}
                 </a>
-                <div>
+                <div class="ci-info">
                   <a href="{% url 'store:product_detail' line.product.slug %}"><strong>{{ line.product.name }}</strong></a>
                   <div class="muted" style="font-size:13px">
                     {% if line.color_name %}Colour: {{ line.color_name }}{% endif %}
                     {% if line.additional_meters %} · +{{ line.additional_meters|meters }} m length{% endif %}
                   </div>
                   <div class="muted" style="font-size:13px">{{ line.unit_price|rs }} each</div>
-                  <div style="display:flex;gap:14px;align-items:center;margin-top:10px">
-                    <form method="post" action="{% url 'store:cart_update' %}" class="qty-form" style="display:flex;align-items:center;gap:0">
-                      {% csrf_token %}
-                      <input type="hidden" name="key" value="{{ line.key }}"/>
-                      <div class="qty">
-                        <button type="button" data-step="-1">−</button>
-                        <input type="text" name="quantity" value="{{ line.quantity }}" inputmode="numeric"/>
-                        <button type="button" data-step="1">+</button>
-                      </div>
-                      <button type="submit" class="btn btn-ghost btn-sm" style="margin-left:8px">Update</button>
-                    </form>
-                    <form method="post" action="{% url 'store:cart_remove' %}">
-                      {% csrf_token %}
-                      <input type="hidden" name="key" value="{{ line.key }}"/>
-                      <button type="submit" class="btn btn-sm" style="background:transparent;color:#b91c1c">Remove</button>
-                    </form>
-                  </div>
                 </div>
-                <div style="text-align:right"><strong>{{ line.line_total|rs }}</strong></div>
+                <div class="ci-total"><strong>{{ line.line_total|rs }}</strong></div>
+                <div class="ci-actions">
+                  <form method="post" action="{% url 'store:cart_update' %}" class="qty-form" style="display:flex;align-items:center;gap:8px">
+                    {% csrf_token %}
+                    <input type="hidden" name="key" value="{{ line.key }}"/>
+                    <div class="qty">
+                      <button type="button" data-step="-1">−</button>
+                      <input type="text" name="quantity" value="{{ line.quantity }}" inputmode="numeric"/>
+                      <button type="button" data-step="1">+</button>
+                    </div>
+                    <button type="submit" class="btn btn-ghost btn-sm">Update</button>
+                  </form>
+                  <form method="post" action="{% url 'store:cart_remove' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="key" value="{{ line.key }}"/>
+                    <button type="submit" class="btn btn-sm" style="background:transparent;color:#b91c1c">Remove</button>
+                  </form>
+                </div>
               </div>
             {% endfor %}
           </div>

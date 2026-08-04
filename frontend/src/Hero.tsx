@@ -44,7 +44,10 @@ export default function Hero() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    // min-h-screen is 100vh, which on mobile browsers is the *expanded* height:
+    // the hero ends up taller than the visible area until the URL bar hides.
+    // dvh tracks the real viewport, with vh kept as the fallback.
+    <div className="min-h-screen min-h-[100dvh] bg-black relative overflow-hidden">
       <svg className="absolute inset-0 w-0 h-0">
         <defs>
           <filter id="glass-effect" x="-50%" y="-50%" width="200%" height="200%">
@@ -115,12 +118,12 @@ export default function Hero() {
 
       <Navbar />
 
-      <main className="absolute bottom-8 left-8 z-20 max-w-2xl">
+      <main className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 z-20 max-w-2xl">
 
       </main>
 
-      <div className="absolute bottom-8 right-8 z-30">
-        <div className="relative w-20 h-20 flex items-center justify-center">
+      <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 z-30">
+        <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
           <PulsingBorder
             colors={["#06b6d4", "#0891b2", "#f97316", "#00FF88", "#FFD700", "#FF6B35", "#ffffff"]}
             colorBack="#00000000"

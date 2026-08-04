@@ -17,9 +17,21 @@
 
   <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,transparent 50%,rgba(0,0,0,.45) 100%);pointer-events:none;"></div>
 
-  <div id="silk-content" style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;opacity:0;transition:opacity .6s ease;">
+  <style>
+    /* Percentages alone make the mark postage-stamp-sized on a phone and
+       oversized on a wide desktop, so the logo is clamped against both axes. */
+    #silk-content { padding: clamp(1rem, 6vw, 2rem); }
+    #silk-logo { width: {% if persist %}min(46vw, 22vh, 200px){% else %}min(62vw, 40vh, 340px){% endif %};
+                 max-width: 100%; height: auto; object-fit: contain; }
+    #silk-corner { top: clamp(1rem, 5vw, 2rem); left: clamp(1rem, 5vw, 2rem); }
+    @media (max-width: 480px) {
+      #silk-corner { letter-spacing: .18em; }
+    }
+  </style>
+
+  <div id="silk-content" style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:0;transition:opacity .6s ease;">
     <img id="silk-logo" src="{% static 'images/logo-transparent.png' %}" alt="{{ store_settings.store_name|default:'xeco' }}"
-         style="max-width:{% if persist %}22%{% else %}40%{% endif %};max-height:{% if persist %}22%{% else %}40%{% endif %};object-fit:contain;opacity:0;transform:translateY(1.5rem);transition:opacity 1s ease,transform 1s ease;" />
+         style="opacity:0;transform:translateY(1.5rem);transition:opacity 1s ease,transform 1s ease;" />
 
     {% if persist %}
     <div id="silk-copy" style="max-width:34rem;opacity:0;transform:translateY(1rem);transition:opacity 1s ease .5s,transform 1s ease .5s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
@@ -41,8 +53,8 @@
     {% endif %}
   </div>
 
-  <div id="silk-corner" style="position:absolute;top:2rem;left:2rem;z-index:3;font-size:.75rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;color:rgba(156,163,175,.4);opacity:0;transform:translateY(-1rem);transition:opacity .9s ease .9s,transform .9s ease .9s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
-    {{ corner|default:"2025" }}
+  <div id="silk-corner" style="position:absolute;z-index:3;font-size:.75rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;color:rgba(156,163,175,.4);opacity:0;transform:translateY(-1rem);transition:opacity .9s ease .9s,transform .9s ease .9s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
+    {% comment %} {{ corner|default:"2025" }} {% endcomment %}
   </div>
 </div>
 
@@ -92,9 +104,16 @@
   var raf, time = 0;
   var speed = 0.02, scale = 2, noiseI = 0.8;
 
+  // The silk is computed per pixel in JS every frame, so the buffer is kept
+  // deliberately small and CSS scales it back up. Phones get a coarser buffer
+  // still — the pattern is a soft gradient, so the extra interpolation doesn't
+  // show, and a mid-range handset doesn't drop frames on the preloader.
+  function divisor() { return window.innerWidth < 768 ? 4 : 2; }
+
   function resize() {
-    canvas.width  = Math.ceil(window.innerWidth  / 2);
-    canvas.height = Math.ceil(window.innerHeight / 2);
+    var d = divisor();
+    canvas.width  = Math.ceil(window.innerWidth  / d);
+    canvas.height = Math.ceil(window.innerHeight / d);
   }
   resize();
   window.addEventListener('resize', resize);

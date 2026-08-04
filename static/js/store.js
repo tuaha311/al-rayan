@@ -20,6 +20,36 @@
     }, 3500);
   }
 
+  // --- Mobile nav drawer ------------------------------------------------
+  var navToggle = document.getElementById('nav-toggle');
+  var mobileNav = document.getElementById('mobile-nav');
+  if (navToggle && mobileNav) {
+    var setNav = function (open) {
+      mobileNav.hidden = !open;
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    navToggle.addEventListener('click', function () {
+      setNav(mobileNav.hidden);
+    });
+    // The drawer is CSS-hidden above 1200px; keep the button's state honest so
+    // it never reports "expanded" while pointing at an invisible panel.
+    var wide = window.matchMedia('(min-width: 1201px)');
+    var syncNav = function () { if (wide.matches) setNav(false); };
+    wide.addEventListener('change', syncNav);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !mobileNav.hidden) { setNav(false); navToggle.focus(); }
+    });
+  }
+
+  // --- Shop filters: collapsed on phones, always open on desktop ---------
+  var filters = document.getElementById('filters');
+  if (filters && filters.tagName === 'DETAILS') {
+    var desktop = window.matchMedia('(min-width: 901px)');
+    var syncFilters = function () { filters.open = desktop.matches; };
+    desktop.addEventListener('change', syncFilters);
+    syncFilters();
+  }
+
   // --- Quantity steppers (+/-) -----------------------------------------
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-step]');

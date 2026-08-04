@@ -1,0 +1,13 @@
+{% comment %}
+  The storefront's primary links, rendered twice: once in the desktop bar
+  (.main-nav) and once in the mobile drawer (.mobile-nav-links). Keeping them in
+  one partial stops the two lists from drifting apart.
+{% endcomment %}
+<a href="{% url 'store:product_list' %}">Shop All</a>
+<a href="{% url 'store:product_list' %}?fabric=wash-wear">Wash n Wear</a>
+<a href="{% url 'store:product_list' %}?fabric=cotton">Cotton</a>
+<a href="{% url 'store:product_list' %}?fabric=boski">Boski</a>
+<a href="{% url 'store:product_list' %}?fabric=latha">Latha</a>
+<a href="{% url 'store:product_list' %}?fabric=karandi">Karandi</a>
+<a href="{% url 'store:product_list' %}?fabric=embroidered">Embroidered</a>
+<a href="{% url 'store:product_list' %}?on_sale=1">Sale</a>

@@ -114,7 +114,9 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="md:hidden absolute top-full right-4 left-4 mt-2 z-30 flex flex-col gap-1 rounded-2xl border border-white/10 bg-black/80 p-3 backdrop-blur-md"
+            // Capped and scrollable: eight links plus the login row overflow a
+            // landscape phone otherwise.
+            className="md:hidden absolute top-full right-4 left-4 mt-2 z-30 flex max-h-[calc(100dvh-6rem)] flex-col gap-1 overflow-y-auto rounded-2xl border border-white/10 bg-black/80 p-3 backdrop-blur-md"
           >
             {LINKS.map((link) => (
               <a

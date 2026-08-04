@@ -1,6 +1,6 @@
 {% load static %}
 <header class="site-header">
-  <div style="padding-left: 2rem; padding-right: 2rem;">
+  <div class="header-inner">
     <div class="bar">
       <a href="{% url 'store:home' %}" class="brand">
         <img src="{% static 'images/logo-transparent.png' %}" alt="{{ store_settings.store_name }}"/>
@@ -8,14 +8,7 @@
       </a>
 
       <nav class="main-nav">
-        <a href="{% url 'store:product_list' %}">Shop All</a>
-        <a href="{% url 'store:product_list' %}?fabric=wash-wear">Wash n Wear</a>
-        <a href="{% url 'store:product_list' %}?fabric=cotton">Cotton</a>
-        <a href="{% url 'store:product_list' %}?fabric=boski">Boski</a>
-        <a href="{% url 'store:product_list' %}?fabric=latha">Latha</a>
-        <a href="{% url 'store:product_list' %}?fabric=karandi">Karandi</a>
-        <a href="{% url 'store:product_list' %}?fabric=embroidered">Embroidered</a>
-        <a href="{% url 'store:product_list' %}?on_sale=1">Sale</a>
+        {% include "store/partials/nav_links.html" %}
       </nav>
 
       <div class="header-actions">
@@ -31,7 +24,26 @@
           <span>Cart</span>
           {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
         </a>
+
+        {# Shown by CSS below 900px, where the link bar no longer fits. #}
+        <button type="button" class="nav-toggle" id="nav-toggle"
+                aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">
+          <svg class="icon icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <svg class="icon icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
       </div>
     </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" hidden>
+    <form class="search-mini" action="{% url 'store:product_list' %}" method="get" role="search">
+      <button type="submit" aria-label="Search">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <input type="text" name="q" placeholder="Search fabrics…" value="{{ request.GET.q }}"/>
+    </form>
+    <nav class="mobile-nav-links">
+      {% include "store/partials/nav_links.html" %}
+    </nav>
   </div>
 </header>

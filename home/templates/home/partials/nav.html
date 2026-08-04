@@ -1,4 +1,19 @@
-<header class="relative z-20 flex items-center justify-between p-6">
+<style>
+  /* This header predates the storefront and rides on the frozen Next.js CSS
+     bundle, so its responsive rules live here rather than as utility classes
+     that bundle may not contain. */
+  .xt-nav { padding: 1.5rem; gap: 1rem; }
+  .xt-wordmark { margin-left: 1rem; font-size: 1.5rem; letter-spacing: 0.15em; }
+  @media (max-width: 640px) {
+    .xt-nav { padding: 1rem; gap: .5rem; }
+    .xt-wordmark { margin-left: .625rem; font-size: 1.05rem; letter-spacing: 0.1em; }
+    .xt-nav-links { display: none; }
+  }
+  @media (max-width: 380px) {
+    .xt-wordmark { font-size: .9rem; letter-spacing: 0.06em; }
+  }
+</style>
+<header class="xt-nav relative z-20 flex items-center justify-between">
 
   <!-- Logo -->
   <div class="flex items-center group cursor-pointer">
@@ -8,7 +23,7 @@
            style="color:transparent;filter:url(#logo-glow)"
            src="/images/logo-transparent.png"/>
     </div>
-    <span class="ml-4 flex" style="font-family:var(--font-orbitron),sans-serif;font-size:1.5rem;letter-spacing:0.15em">
+    <span class="xt-wordmark flex" style="font-family:var(--font-orbitron),sans-serif;">
       <span style="font-weight:800;color:#ffffff;display:inline-block">X</span>
       <span style="font-weight:757;color:#ffffff;display:inline-block">E</span>
       <span style="font-weight:714;color:#ffffff;display:inline-block">C</span>
@@ -30,7 +45,7 @@
   </div>
 
   <!-- Nav links -->
-  <nav class="flex items-center space-x-2">
+  <nav class="xt-nav-links flex items-center space-x-2">
     <a href="#" class="text-white/80 hover:text-white text-xs font-light px-3 py-2 rounded-full hover:bg-white/10 transition-all duration-200">Features</a>
     <a href="#" class="text-white/80 hover:text-white text-xs font-light px-3 py-2 rounded-full hover:bg-white/10 transition-all duration-200">Pricing</a>
   </nav>

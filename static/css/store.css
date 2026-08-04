@@ -18,6 +18,10 @@
   --card: #ffffff;
   --danger: #b91c1c;
   --radius: 14px;
+  /* Single source of truth for the page gutter — the header, every .container
+     and the flash stack all read it, so they stay flush at any width. */
+  --gutter: 32px;
+  --header-h: 80px;
   --shadow-sm: 0 1px 2px rgba(28, 25, 23, .06);
   --shadow: 0 6px 24px rgba(28, 25, 23, .08);
   --shadow-lg: 0 18px 50px rgba(28, 25, 23, .12);
@@ -104,7 +108,8 @@ h1, h2, h3, h4 {
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 
-.container { width: 100%; max-width: var(--maxw); margin: 0 auto; }
+.container { width: 100%; max-width: var(--maxw); margin: 0 auto;
+  padding-left: var(--gutter); padding-right: var(--gutter); }
 .section { padding: 56px 0; }
 .section-tight { padding: 32px 0; }
 
@@ -162,15 +167,18 @@ img { max-width: 100%; display: block; }
   border-bottom: 1px solid var(--glass-border);
   box-shadow: 0 4px 24px rgba(28,25,23,.06), inset 0 -1px 0 rgba(255,255,255,.4);
 }
-.site-header .bar { display: flex; align-items: center; gap: 24px; height: 80px; justify-content: space-between;}
-.brand { display: flex; align-items: center; gap: 10px; }
-.brand img { width: 80px; height: 90px; }
+.site-header .header-inner { padding-left: var(--gutter); padding-right: var(--gutter); }
+.site-header .bar { display: flex; align-items: center; gap: 24px; height: var(--header-h);
+  justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand img { width: 80px; height: 90px; flex: none; }
 .brand .sub { color: var(--emerald-700); }
 .brand-text {
   font-family: 'Cinzel', serif;
   font-size: 26px;
   font-weight: 500;
   letter-spacing: 3px;
+  min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
   background: linear-gradient(
@@ -220,6 +228,31 @@ img { max-width: 100%; display: block; }
 .cart-badge { background: var(--gold); color: #2a2300; border-radius: 999px;
   font-size: 11px; font-weight: 800; min-width: 18px; height: 18px; padding: 0 5px;
   display: inline-flex; align-items: center; justify-content: center; }
+
+/* Hamburger — hidden until the desktop nav moves into the drawer at 1200px. */
+.nav-toggle { display: none; flex: none; width: 44px; height: 44px; padding: 0;
+  align-items: center; justify-content: center; cursor: pointer;
+  border: 1px solid var(--glass-border); border-radius: 12px; color: var(--ink);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-highlight), var(--shadow-sm); }
+.nav-toggle .icon { width: 22px; height: 22px; }
+.nav-toggle .icon-close, .nav-toggle[aria-expanded="true"] .icon-open { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+/* Mobile drawer — search + the full link list the desktop bar can't hold. */
+.mobile-nav { display: none; border-top: 1px solid var(--glass-border);
+  padding: 14px var(--gutter) 20px; max-height: calc(100vh - var(--header-h));
+  max-height: calc(100dvh - var(--header-h)); overflow-y: auto;
+  -webkit-overflow-scrolling: touch; }
+.mobile-nav[hidden] { display: none; }
+.mobile-nav .search-mini { display: flex; width: 100%; margin-bottom: 12px; padding: 10px 14px; }
+.mobile-nav .search-mini input { width: 100%; font-size: 16px; }
+.mobile-nav-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.mobile-nav-links a { display: flex; align-items: center; min-height: 46px;
+  padding: 10px 14px; border-radius: 12px; font-weight: 500; color: var(--ink-soft);
+  border: 1px solid var(--glass-border); background: var(--glass-bg-soft); }
+.mobile-nav-links a:active { background: var(--emerald-50); color: var(--emerald-700); }
 
 .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;
   stroke-linecap: round; stroke-linejoin: round; }
@@ -295,8 +328,8 @@ img { max-width: 100%; display: block; }
 .price-off { color: var(--danger); font-size: 12px; font-weight: 700; }
 
 /* ---- Shop layout: filters + results ---------------------------------- */
-.shop-layout { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
-.filters { position: sticky; top: 90px; background: var(--glass-bg);
+.shop-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; align-items: start; }
+.filters { position: sticky; top: calc(var(--header-h) + 10px); background: var(--glass-bg);
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius); padding: 18px;
@@ -304,6 +337,16 @@ img { max-width: 100%; display: block; }
 .filters h4 { font-family: 'Inter', sans-serif; font-size: 12px; text-transform: uppercase;
   letter-spacing: .08em; color: var(--muted); margin: 18px 0 8px; }
 .filters h4:first-child { margin-top: 0; }
+/* The filter panel is a <details> so it can collapse on narrow screens with no
+   JS; the summary is hidden on desktop, where it is always open. */
+.filters > summary { display: none; }
+.filters-summary { display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; cursor: pointer; list-style: none; font-weight: 700; min-height: 24px; }
+.filters-summary::-webkit-details-marker { display: none; }
+.filters-summary .chev { transition: transform .2s ease; color: var(--muted); }
+.filters[open] > .filters-summary .chev { transform: rotate(180deg); }
+.filters-summary .n { background: var(--emerald-700); color: #fff; border-radius: 999px;
+  font-size: 11px; font-weight: 800; padding: 1px 7px; margin-left: auto; }
 .filter-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .filter-list a { display: flex; justify-content: space-between; padding: 6px 10px; border-radius: 8px;
   color: var(--ink-soft); font-size: 14px; }
@@ -332,7 +375,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   box-shadow: var(--glass-highlight), 0 0 0 3px var(--glass-tint-emerald); }
 
 /* ---- Pagination ------------------------------------------------------- */
-.pagination { display: flex; gap: 6px; justify-content: center; margin-top: 36px; }
+.pagination { display: flex; gap: 6px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
 .pagination a, .pagination span { padding: 8px 13px; border-radius: 9px; border: 1px solid var(--glass-border);
   background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
   color: var(--ink-soft); font-weight: 600; box-shadow: var(--glass-highlight); }
@@ -340,7 +383,8 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .pagination a:hover { border-color: var(--emerald-700); color: var(--emerald-700); }
 
 /* ---- Product detail --------------------------------------------------- */
-.pdp { display: grid; grid-template-columns: 1.05fr 1fr; gap: 44px; align-items: start; }
+.pdp { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 44px;
+  align-items: start; }
 .gallery .main { aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden;
   border: 1px solid var(--glass-border); background: var(--glass-bg);
   box-shadow: var(--glass-highlight), var(--shadow-sm); }
@@ -377,7 +421,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .trust div { display: flex; align-items: center; gap: 7px; }
 
 /* ---- Cart / checkout -------------------------------------------------- */
-.cols { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; align-items: start; }
 .panel { background: var(--glass-bg);
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border); border-radius: var(--radius);
@@ -385,13 +429,26 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .panel .panel-head { padding: 16px 20px; border-bottom: 1px solid var(--glass-border);
   font-weight: 700; background: linear-gradient(180deg, rgba(255,255,255,.5), transparent); }
 .panel .panel-body { padding: 20px; }
-.summary { position: sticky; top: 90px; }
-.summary .row { display: flex; justify-content: space-between; padding: 7px 0; color: var(--ink-soft); }
+/* Summary rows are "label … amount" pairs: let the label wrap, never the
+   amount, and keep a gap so the two can't collide on a narrow screen. */
+.panel-body .row { gap: 12px; }
+.panel-body .row > :last-child { white-space: nowrap; }
+.summary { position: sticky; top: calc(var(--header-h) + 10px); }
+.summary .row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0;
+  color: var(--ink-soft); }
 .summary .row.total { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 14px;
   font-size: 19px; font-weight: 800; color: var(--ink); }
-.cart-item { display: grid; grid-template-columns: 84px 1fr auto; gap: 16px; padding: 16px 0;
+.cart-item { display: grid; gap: 6px 16px; padding: 16px 0;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  grid-template-areas: "thumb info  total"
+                       "thumb acts  total";
   border-bottom: 1px solid var(--line); align-items: center; }
 .cart-item:last-child { border-bottom: 0; }
+.cart-item > .thumb { grid-area: thumb; align-self: center; }
+.cart-item > .ci-info { grid-area: info; min-width: 0; align-self: end; }
+.cart-item > .ci-actions { grid-area: acts; align-self: start;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.cart-item > .ci-total { grid-area: total; text-align: right; white-space: nowrap; }
 .cart-item .thumb { width: 84px; height: 104px; border-radius: 10px; overflow: hidden;
   border: 1px solid var(--line); }
 .cart-item .thumb img, .cart-item .thumb .thumb-fallback { width: 100%; height: 100%; object-fit: cover; }
@@ -410,8 +467,9 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .empty .big { font-size: 54px; margin-bottom: 8px; }
 
 /* ---- Messages --------------------------------------------------------- */
-.flash-wrap { position: fixed; top: 84px; right: 20px; z-index: 80; display: flex;
-  flex-direction: column; gap: 10px; max-width: 340px; }
+.flash-wrap { position: fixed; top: calc(var(--header-h) + 4px); right: var(--gutter);
+  left: auto; z-index: 80; display: flex;
+  flex-direction: column; gap: 10px; width: 340px; max-width: calc(100vw - var(--gutter) * 2); }
 .flash { background: var(--glass-bg-strong);
   -webkit-backdrop-filter: var(--glass-blur-lg); backdrop-filter: var(--glass-blur-lg);
   border: 1px solid var(--glass-border); border-left: 4px solid var(--emerald-700);
@@ -439,27 +497,105 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: #78716c; }
 
 /* ---- Responsive ------------------------------------------------------- */
+/* The full bar (brand + eight links + search + cart) measures ~1390px, so it
+   only fits at the very top end. Below that it steps down: compact, then a
+   drawer. */
+@media (max-width: 1360px) {
+  .brand img { width: 60px; height: 68px; }
+  .brand-text { font-size: 22px; letter-spacing: 2px; }
+  .main-nav { margin-left: 0; }
+  .main-nav a { padding: 8px 10px; font-size: 14px; }
+  .search-mini input { width: 110px; }
+  .site-header .bar { gap: 16px; }
+}
+
+@media (max-width: 1200px) {
+  :root { --gutter: 24px; }
+  .hero .container { gap: 64px; }
+  /* Nav and search move into the drawer — together they need ~1190px. */
+  .main-nav { display: none; }
+  .header-actions .search-mini { display: none; }
+  .nav-toggle { display: inline-flex; }
+  .mobile-nav:not([hidden]) { display: block; }
+}
+
+/* With the filter rail taking 240px, four cards get too narrow to read on a
+   tablet — drop to three before the layout itself changes. */
+@media (max-width: 1100px) {
+  .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 1000px) {
-  .product-grid { grid-template-columns: repeat(3, 1fr); }
-  .hero .container { grid-template-columns: 1fr; }
-  .hero-art { max-width: 420px; }
-  .pdp { grid-template-columns: 1fr; gap: 28px; }
-  .cols { grid-template-columns: 1fr; }
+  .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hero .container { grid-template-columns: minmax(0, 1fr); gap: 36px; justify-items: start; }
+  .hero-art { width: 100%; max-width: 420px; }
+  .hero p { max-width: none; }
+  .pdp { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .gallery .main { max-width: 460px; }
+  .cols { grid-template-columns: minmax(0, 1fr); }
   .summary { position: static; }
   .foot-grid { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 760px) {
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
-  .shop-layout { grid-template-columns: 1fr; }
-  .filters { position: static; }
-  .search-mini { display: none; }
-  .main-nav { display: none; }
-  .form-grid { grid-template-columns: 1fr; }
-  .section { padding: 40px 0; }
+
+@media (max-width: 900px) {
+  :root { --header-h: 64px; }
+  /* The 240px filter rail squeezes the cards past readable below this, so it
+     becomes a collapsed disclosure above the results instead. */
+  .shop-layout { grid-template-columns: minmax(0, 1fr); }
+  .filters { position: static; padding: 14px 16px; }
+  .filters > summary { display: flex; }
+  .filters[open] > summary { margin-bottom: 6px; }
+  .site-header .bar { gap: 12px; }
+  .brand img { width: 46px; height: 52px; }
+  .brand-text { font-size: 18px; letter-spacing: 2px; }
+  .cart-link { padding: 9px 14px; }
 }
+
+@media (max-width: 760px) {
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .section { padding: 40px 0; }
+  .section-head h2 { font-size: 24px; }
+  .pdp h1 { font-size: 27px; }
+  .hero .container { padding-top: 40px; padding-bottom: 40px; }
+  .cat-card { flex-basis: calc(50% - 6px); min-width: 0; }
+  /* 16px is the threshold below which iOS Safari zooms the page on focus. */
+  .field-input, select.sort, .search-mini input, .qty input,
+  input[type="text"], input[type="tel"], input[type="email"], textarea, select { font-size: 16px; }
+  .qty button { width: 44px; height: 44px; }
+  .qty input { height: 44px; }
+}
+
+@media (max-width: 560px) {
+  .cart-item { grid-template-columns: 72px minmax(0, 1fr);
+    grid-template-areas: "thumb info"
+                         "thumb total"
+                         "acts  acts"; }
+  .cart-item > .thumb { align-self: start; }
+  .cart-item > .ci-info { align-self: start; }
+  .cart-item > .ci-total { text-align: left; align-self: start; }
+  .cart-item > .ci-actions { margin-top: 12px; }
+  .cart-item .thumb { width: 72px; height: 90px; }
+  .trust { gap: 10px 16px; }
+  .pdp .actions { flex-direction: column; align-items: stretch; }
+  .pdp .actions .btn { width: 100%; }
+}
+
 @media (max-width: 420px) {
-  .product-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .foot-grid { grid-template-columns: 1fr; }
+  :root { --gutter: 16px; }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .foot-grid { grid-template-columns: minmax(0, 1fr); }
+  .cat-strip { gap: 10px; }
+  .product-body { padding: 12px 12px 14px; }
+  .price { font-size: 15px; }
+  .hero .cta .btn { flex: 1 1 100%; }
+}
+
+/* Very small phones (≤360px) — keep the brand from crowding out the cart. */
+@media (max-width: 360px) {
+  .brand-text { font-size: 15px; letter-spacing: 1px; }
+  .brand img { width: 38px; height: 44px; }
+  .cart-link span:not(.cart-badge) { display: none; }
 }
 
 /* ---- Graceful degradation for the liquid-glass layer ------------------ */
@@ -468,15 +604,17 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .site-header, .search-mini, .cat-card, .product-card, .filters, .panel,
   .gallery .main, .pagination a, .pagination span, .flash, .btn-ghost,
-  select.sort, .field-input { background: var(--card); }
+  select.sort, .field-input, .nav-toggle, .mobile-nav,
+  .mobile-nav-links a { background: var(--card); }
   .chip, .cod-banner { background: var(--emerald-50); }
 }
 
 /* Respect users who ask the OS to reduce transparency. */
 @media (prefers-reduced-transparency: reduce) {
   body::before { background: linear-gradient(180deg, #fbfaf8, var(--bg)); }
-  .site-header, .flash { background: #fff; }
+  .site-header, .flash, .mobile-nav { background: #fff; }
   .search-mini, .cat-card, .product-card, .filters, .panel, .gallery .main,
-  .pagination a, .pagination span, .btn-ghost, select.sort, .field-input { background: var(--card); }
+  .pagination a, .pagination span, .btn-ghost, select.sort, .field-input,
+  .nav-toggle, .mobile-nav, .mobile-nav-links a { background: var(--card); }
   .chip, .cod-banner { background: var(--emerald-50); }
 }
