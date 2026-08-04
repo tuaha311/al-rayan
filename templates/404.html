@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+{% comment %}
+  Django's default handler404 picks this template up automatically (it only
+  renders when DEBUG=False). It reuses the silk flash screen — the same canvas
+  the storefront preloads with — in persist mode, so a dead link lands on the
+  brand rather than on a bare error page.
+{% endcomment %}
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="robots" content="noindex"/>
+  <title>Page not found — {{ store_settings.store_name|default:"Al Rayan" }}</title>
+
+  <link rel="icon" href="{% static 'images/logo-transparent.png' %}" type="image/svg+xml"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
+  <style>
+    html, body { height: 100%; margin: 0; background: #120401; }
+  </style>
+</head>
+<body>
+  {% url 'store:home' as home_url %}
+  {% include "home/partials/flash_screen.html" with persist=True corner="404" headline="This page slipped off the shelf." subhead="The link may be broken, or the piece you were looking for has moved on. Everything else is still on the rack." link_url=home_url link_label="Back to the shop" %}
+</body>
+</html>

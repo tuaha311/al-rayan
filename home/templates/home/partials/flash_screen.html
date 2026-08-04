@@ -1,19 +1,48 @@
 {% load static %}
+{% comment %}
+  Silk flash screen. Two modes:
+
+    default   — preloader: covers the page, then fades itself out after 2.5s.
+    persist=True — stays put (used by the 404 page, which *is* this screen).
+
+  In persist mode the caller supplies `headline` / `subhead` / `link_url` /
+  `link_label` to render copy under the logo, and page scrolling is left alone.
+{% endcomment %}
 <div id="flash-screen"
+     data-persist="{% if persist %}1{% else %}0{% endif %}"
      style="position:fixed;inset:0;z-index:9999;background:#120401;overflow:hidden;"
-     aria-hidden="true">
+     {% if not persist %}aria-hidden="true"{% endif %}>
   <!-- canvas rendered at half resolution; CSS scales it up smoothly (bilinear) -->
   <canvas id="silk-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;image-rendering:auto;"></canvas>
 
   <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,transparent 50%,rgba(0,0,0,.45) 100%);pointer-events:none;"></div>
 
-  <div id="silk-content" style="position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s ease;">
-    <img id="silk-logo" src="{% static 'images/logo-transparent.png' %}" alt="xeco"
-         style="max-width:40%;max-height:40%;object-fit:contain;opacity:0;transform:translateY(1.5rem);transition:opacity 1s ease,transform 1s ease;" />
+  <div id="silk-content" style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;opacity:0;transition:opacity .6s ease;">
+    <img id="silk-logo" src="{% static 'images/logo-transparent.png' %}" alt="{{ store_settings.store_name|default:'xeco' }}"
+         style="max-width:{% if persist %}22%{% else %}40%{% endif %};max-height:{% if persist %}22%{% else %}40%{% endif %};object-fit:contain;opacity:0;transform:translateY(1.5rem);transition:opacity 1s ease,transform 1s ease;" />
+
+    {% if persist %}
+    <div id="silk-copy" style="max-width:34rem;opacity:0;transform:translateY(1rem);transition:opacity 1s ease .5s,transform 1s ease .5s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
+      <h1 style="margin:1.5rem 0 0;font-size:clamp(1.5rem,4vw,2.25rem);font-weight:600;letter-spacing:.02em;color:rgba(245,238,230,.95);">
+        {{ headline|default:"This page slipped off the shelf." }}
+      </h1>
+      <p style="margin:.85rem 0 0;font-size:clamp(.9rem,2vw,1rem);line-height:1.7;font-weight:300;color:rgba(214,203,192,.65);font-family:Inter,ui-sans-serif,system-ui,sans-serif;">
+        {{ subhead|default:"The link may be broken, or the piece has moved on." }}
+      </p>
+      {% if link_url %}
+      <a href="{{ link_url }}"
+         style="display:inline-block;margin-top:1.75rem;padding:.7rem 1.6rem;border:1px solid rgba(245,238,230,.28);border-radius:999px;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:rgba(245,238,230,.9);background:rgba(255,255,255,.04);transition:background .3s ease,border-color .3s ease;"
+         onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.borderColor='rgba(245,238,230,.5)';"
+         onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.borderColor='rgba(245,238,230,.28)';">
+        {{ link_label|default:"Back to the shop" }}
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
   </div>
 
   <div id="silk-corner" style="position:absolute;top:2rem;left:2rem;z-index:3;font-size:.75rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;color:rgba(156,163,175,.4);opacity:0;transform:translateY(-1rem);transition:opacity .9s ease .9s,transform .9s ease .9s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
-    2025
+    {{ corner|default:"2025" }}
   </div>
 </div>
 
@@ -23,11 +52,24 @@
   var canvas  = document.getElementById('silk-canvas');
   var content = document.getElementById('silk-content');
   var logo    = document.getElementById('silk-logo');
+  var copy    = document.getElementById('silk-copy');
+  var corner  = document.getElementById('silk-corner');
   if (!screen || !canvas) return;
+
+  // Persist mode: the screen is the page (404), so it never dismisses itself.
+  var persist = screen.dataset.persist === '1';
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var prevOverflow = document.documentElement.style.overflow;
   document.documentElement.style.overflow = 'hidden';
+
+  function reveal() {
+    content.style.opacity = '1';
+    logo.style.opacity    = '1';
+    logo.style.transform  = 'translateY(0)';
+    if (copy)   { copy.style.opacity = '1'; copy.style.transform = 'translateY(0)'; }
+    if (corner) { corner.style.opacity = '1'; corner.style.transform = 'translateY(0)'; }
+  }
 
   function dismiss() {
     document.documentElement.style.overflow = prevOverflow;
@@ -36,7 +78,13 @@
     setTimeout(function() { if (screen.parentNode) screen.parentNode.removeChild(screen); }, 700);
   }
 
-  if (reduce) { dismiss(); return; }
+  // Without motion, skip the canvas entirely: the preloader gets out of the
+  // way, the 404 keeps its copy on the flat background.
+  if (reduce) {
+    if (persist) { reveal(); return; }
+    dismiss();
+    return;
+  }
 
   // Half-resolution pixel buffer — CSS width/height:100% scales it up with
   // bilinear interpolation so there are no visible pixel blocks.
@@ -106,14 +154,22 @@
 
   raf = requestAnimationFrame(tick);
 
-  // Fade in logo after first two frames so canvas has painted
+  // Fade in content after first two frames so canvas has painted
   requestAnimationFrame(function() {
-    requestAnimationFrame(function() {
-      content.style.opacity = '1';
-      logo.style.opacity    = '1';
-      logo.style.transform  = 'translateY(0)';
-    });
+    requestAnimationFrame(reveal);
   });
+
+  if (persist) {
+    // Stop burning CPU on the silk sim while the tab is in the background.
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+      } else {
+        raf = requestAnimationFrame(tick);
+      }
+    });
+    return;
+  }
 
   setTimeout(function() {
     cancelAnimationFrame(raf);
