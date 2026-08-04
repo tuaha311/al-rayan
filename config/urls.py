@@ -18,18 +18,20 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.static import serve
 from django.conf import settings
-from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^_next/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'static/_next'}),
     re_path(r'^images/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'static/images'}),
     re_path(r'^videos/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'static/videos'}),
+    # User-uploaded media lives on the instance's own disk — there is no S3 or
+    # reverse proxy in front, so Django serves it in every environment (not just
+    # DEBUG). WhiteNoise can't do this job: it indexes files once at startup, so
+    # images uploaded through the admin would 404 until the next restart.
+    re_path(
+        r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}
+    ),
     # The Al Rayan storefront owns the site root. The legacy XECOTech landing
     # (home app) is kept in the repo but unlinked from routing.
     path('', include('store.urls')),
 ]
-
-# Serve user-uploaded media files during development.
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -32,7 +32,12 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+# Strip whitespace around each entry — Django compares hosts exactly, so a
+# stray space (e.g. "localhost, *") silently makes the entry match nothing and
+# every request 400s once DEBUG is off.
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()
+]
 
 
 # Application definition
