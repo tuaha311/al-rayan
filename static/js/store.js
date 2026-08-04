@@ -41,6 +41,51 @@
     });
   }
 
+  // --- Android app prompt ----------------------------------------------
+  // Rendered hidden and only revealed here, so a dismissal is honoured before
+  // the card can ever paint. iPhones are skipped: an APK is useless to them.
+  var promo = document.getElementById('app-promo');
+  if (promo) {
+    var STORE_KEY = 'alrayan:appPromoDismissed';
+    var SNOOZE_MS = 14 * 24 * 60 * 60 * 1000;   // shown again after two weeks
+    var ua = navigator.userAgent || '';
+    var isApple = /iPhone|iPad|iPod/.test(ua) ||
+      // iPadOS 13+ reports itself as a Mac; the touch points give it away.
+      (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+
+    // Private-mode Safari throws on storage access — an unreadable store just
+    // means we show the card, never that we break the page.
+    var read = function () {
+      try { return window.localStorage.getItem(STORE_KEY); } catch (e) { return null; }
+    };
+    var write = function (v) {
+      try { window.localStorage.setItem(STORE_KEY, v); } catch (e) { /* ignore */ }
+    };
+
+    var dismissedAt = parseInt(read(), 10);
+    var snoozed = dismissedAt && (Date.now() - dismissedAt) < SNOOZE_MS;
+
+    if (!isApple && !snoozed) {
+      // Let the page settle first — an offer that lands on top of content the
+      // reader has not seen yet reads as an ad.
+      setTimeout(function () { promo.hidden = false; }, 1400);
+    }
+
+    var closePromo = function () {
+      write(String(Date.now()));
+      promo.classList.add('is-leaving');
+      setTimeout(function () { promo.hidden = true; promo.classList.remove('is-leaving'); }, 220);
+    };
+    document.getElementById('app-promo-close').addEventListener('click', closePromo);
+    // Downloading is consent enough — don't nag afterwards.
+    promo.querySelector('.app-promo-cta').addEventListener('click', function () {
+      setTimeout(closePromo, 600);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !promo.hidden) closePromo();
+    });
+  }
+
   // --- Shop filters: collapsed on phones, always open on desktop ---------
   var filters = document.getElementById('filters');
   if (filters && filters.tagName === 'DETAILS') {

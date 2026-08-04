@@ -1,0 +1,10 @@
+.gradle/
+build/
+local.properties
+
+# Signing material — never committed. Back up al-rayan.jks and
+# keystore.properties somewhere safe: losing them means existing installs can
+# no longer be updated, only uninstalled and reinstalled.
+keystore.properties
+*.jks
+*.keystore

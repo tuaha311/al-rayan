@@ -1,13 +1,15 @@
 from decimal import Decimal, InvalidOperation
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import Http404
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .cart import Cart
+from .constants import ANDROID_APK_PATH, ANDROID_APP_VERSION
 from .forms import CheckoutForm
 from .models import (
     Category,
@@ -268,3 +270,26 @@ def order_complete(request, order_number):
         raise Http404
     order = get_object_or_404(Order, order_number=order_number)
     return render(request, 'store/order_complete.html', {'order': order})
+
+
+# ---------------------------------------------------------------------------
+# Android app
+# ---------------------------------------------------------------------------
+def download_app(request):
+    """Serve the Android APK built from mobile/.
+
+    Served through a view rather than as a plain static file so the URL stays
+    stable across releases, the browser is told to download (not sniff) it, and
+    the file lands with a versioned, recognisable name.
+    """
+    apk = settings.BASE_DIR / 'static' / ANDROID_APK_PATH
+    if not apk.is_file():
+        raise Http404('The Al Rayan app is not available for download yet.')
+    return FileResponse(
+        apk.open('rb'),
+        as_attachment=True,
+        filename=f'al-rayan-{ANDROID_APP_VERSION}.apk',
+        # Android needs this exact type to hand the file to the package
+        # installer; anything else and Chrome saves an unopenable blob.
+        content_type='application/vnd.android.package-archive',
+    )

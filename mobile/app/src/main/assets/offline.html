@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>No connection</title>
+  <style>
+    /* Deliberately self-contained: this page has to render with no network. */
+    :root { --ink: #1c1917; --muted: #78716c; --bg: #faf9f7; --emerald: #047857; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px; padding: 32px;
+      background: var(--bg); color: var(--ink); text-align: center;
+      font-family: system-ui, -apple-system, Roboto, sans-serif; }
+    img { width: 132px; height: 132px; object-fit: contain; }
+    h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: .01em; }
+    p { margin: 0; max-width: 30ch; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    a { margin-top: 8px; display: inline-block; padding: 11px 26px; border-radius: 999px;
+      background: var(--emerald); color: #fff; font-weight: 600; font-size: 15px;
+      text-decoration: none; box-shadow: 0 6px 18px rgba(4, 120, 87, .35); }
+    a:active { transform: translateY(1px); }
+  </style>
+</head>
+<body>
+  <img src="logo.png" alt=""/>
+  <h1>You're offline</h1>
+  <p>Al Rayan needs an internet connection. Check your data or Wi-Fi and try again.</p>
+  <!-- Intercepted by MainActivity.handleUrl — no JS bridge needed. -->
+  <a href="alrayan://retry">Try again</a>
+</body>
+</html>

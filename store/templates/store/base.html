@@ -27,6 +27,7 @@
   </main>
 
   {% include "store/partials/footer.html" %}
+  {% if not in_mobile_app %}{% include "store/partials/app_promo.html" %}{% endif %}
   <script src="{% static 'js/store.js' %}" defer></script>
   {% block scripts %}{% endblock %}
 </body>

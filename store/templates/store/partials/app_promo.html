@@ -1,0 +1,20 @@
+{% load static %}
+{# Floating "get the Android app" card. Hidden until store.js decides it is
+   worth showing (not dismissed recently, not an iPhone, APK is installable). #}
+<aside class="app-promo" id="app-promo" hidden aria-label="Download the Al Rayan Android app">
+  <button type="button" class="app-promo-close" id="app-promo-close" aria-label="Dismiss">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+
+  <img class="app-promo-logo" src="{% static 'images/logo-transparent.png' %}" alt=""/>
+
+  <div class="app-promo-body">
+    <strong>Get the Al Rayan app</strong>
+    <p>Shop faster on your phone — Android APK, {{ android_app_version }}.</p>
+    <a class="btn btn-primary app-promo-cta" href="{% url 'store:download_app' %}" download>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
+      Download app
+    </a>
+    <span class="app-promo-hint">Tap the downloaded file and allow install from this source.</span>
+  </div>
+</aside>

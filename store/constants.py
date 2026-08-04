@@ -8,6 +8,15 @@ consistent. Pakistan-specific data (provinces, currency) lives here too.
 CURRENCY_CODE = 'PKR'
 CURRENCY_SYMBOL = 'Rs'
 
+# --- Android app -----------------------------------------------------------
+# The APK is built from mobile/ and committed to static/app/ so it ships with
+# a normal deploy. Bump the version here and in mobile/app/build.gradle.kts
+# together — this value only names the downloaded file and labels the UI.
+ANDROID_APP_VERSION = '1.0.0'
+ANDROID_APK_PATH = 'app/al-rayan.apk'  # relative to static/
+# User-Agent marker the WebView app appends; see mobile/.../MainActivity.kt.
+ANDROID_APP_UA_MARKER = 'AlRayanApp'
+
 # Administrative units of Pakistan, used for shipping addresses and rates.
 PROVINCE_PUNJAB = 'punjab'
 PROVINCE_SINDH = 'sindh'

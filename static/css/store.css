@@ -496,6 +496,40 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .foot-bottom { border-top: 1px solid #292524; margin-top: 30px; padding-top: 18px;
   display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: #78716c; }
 
+/* ---- App download prompt ---------------------------------------------- */
+/* Floating card offering the Android APK. store.js unhides it (and remembers a
+   dismissal), so it never flashes on screen for people who closed it. */
+.app-promo {
+  position: fixed; z-index: 90;
+  right: var(--gutter); bottom: 24px; width: 320px; max-width: calc(100vw - var(--gutter) * 2);
+  display: flex; gap: 14px; padding: 16px 16px 16px 14px;
+  border-radius: 18px; border: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur-lg); backdrop-filter: var(--glass-blur-lg);
+  box-shadow: var(--glass-highlight), var(--glass-shadow-lg);
+  animation: promoIn .32s cubic-bezier(.22, 1, .36, 1);
+}
+/* [hidden] loses to the display:flex above without this. */
+.app-promo[hidden] { display: none; }
+.app-promo.is-leaving { animation: promoOut .22s ease forwards; }
+.app-promo-logo { width: 52px; height: 60px; object-fit: contain; flex: none; align-self: flex-start; }
+.app-promo-body { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.app-promo-body strong { font-family: 'Playfair Display', serif; font-size: 17px; letter-spacing: .01em; }
+.app-promo-body p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+.app-promo-cta { align-self: flex-start; margin-top: 4px; padding: 9px 18px; font-size: 14px; }
+.app-promo-cta .icon { width: 17px; height: 17px; }
+.app-promo-hint { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+.app-promo-close {
+  position: absolute; top: 8px; right: 8px; width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer;
+  transition: background .18s ease, color .18s ease;
+}
+.app-promo-close:hover { background: rgba(28,25,23,.07); color: var(--ink); }
+.app-promo-close .icon { width: 16px; height: 16px; }
+@keyframes promoIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes promoOut { to { opacity: 0; transform: translateY(12px) scale(.97); } }
+
 /* ---- Responsive ------------------------------------------------------- */
 /* The full bar (brand + eight links + search + cart) measures ~1390px, so it
    only fits at the very top end. Below that it steps down: compact, then a
@@ -579,6 +613,11 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .trust { gap: 10px 16px; }
   .pdp .actions { flex-direction: column; align-items: stretch; }
   .pdp .actions .btn { width: 100%; }
+  /* Phones get a bottom sheet instead of a corner card — it is the device the
+     APK is actually for, so the offer earns the full width. */
+  .app-promo { left: 10px; right: 10px; width: auto; max-width: none;
+    bottom: calc(10px + env(safe-area-inset-bottom)); border-radius: 20px; }
+  .app-promo-cta { align-self: stretch; }
 }
 
 @media (max-width: 420px) {
@@ -605,7 +644,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .site-header, .search-mini, .cat-card, .product-card, .filters, .panel,
   .gallery .main, .pagination a, .pagination span, .flash, .btn-ghost,
   select.sort, .field-input, .nav-toggle, .mobile-nav,
-  .mobile-nav-links a { background: var(--card); }
+  .mobile-nav-links a, .app-promo { background: var(--card); }
   .chip, .cod-banner { background: var(--emerald-50); }
 }
 
@@ -615,6 +654,6 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .site-header, .flash, .mobile-nav { background: #fff; }
   .search-mini, .cat-card, .product-card, .filters, .panel, .gallery .main,
   .pagination a, .pagination span, .btn-ghost, select.sort, .field-input,
-  .nav-toggle, .mobile-nav, .mobile-nav-links a { background: var(--card); }
+  .nav-toggle, .mobile-nav, .mobile-nav-links a, .app-promo { background: var(--card); }
   .chip, .cod-banner { background: var(--emerald-50); }
 }

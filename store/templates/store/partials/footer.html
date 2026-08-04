@@ -28,6 +28,10 @@
         <a href="#">Delivery &amp; Returns</a>
         <a href="#">Size &amp; Length Guide</a>
         <a href="#">Track Order</a>
+        {# Permanent home for the app once the floating prompt is dismissed. #}
+        {% if not in_mobile_app %}
+          <a href="{% url 'store:download_app' %}" download>Android App (APK)</a>
+        {% endif %}
       </div>
       <div>
         <h5>Contact</h5>

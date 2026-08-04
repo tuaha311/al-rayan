@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mirrors the storefront palette in static/css/store.css so the native chrome
+     and the page it hosts never look like two different products. -->
+<resources>
+    <color name="bg">#FAF9F7</color>
+    <color name="ink">#1C1917</color>
+    <color name="emerald">#047857</color>
+    <color name="gold">#C9A227</color>
+    <color name="icon_bg">#FFFFFF</color>
+</resources>

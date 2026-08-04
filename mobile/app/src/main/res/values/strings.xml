@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Al Rayan</string>
+    <string name="logo_desc">Al Rayan Cloth House</string>
+    <string name="download_started">Downloading…</string>
+</resources>
