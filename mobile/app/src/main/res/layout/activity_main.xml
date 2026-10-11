@@ -40,6 +40,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:indeterminateTint="@color/gold"/>
+            android:indeterminateTint="@color/plum"/>
     </LinearLayout>
 </FrameLayout>

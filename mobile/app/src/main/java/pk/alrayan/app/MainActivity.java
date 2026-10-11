@@ -28,7 +28,7 @@ import android.widget.Toast;
 import java.util.Locale;
 
 /**
- * The whole app: one activity hosting the Al Rayan storefront in a WebView.
+ * The whole app: one activity hosting the Floral Finesse storefront in a WebView.
  *
  * <p>The site is already responsive, so the job here is to stay out of its way —
  * give it the phone viewport, keep store navigation inside the app, and hand
@@ -40,7 +40,7 @@ public class MainActivity extends android.app.Activity {
     private static final String HOME_URL = BuildConfig.BASE_URL + "/";
 
     /** Retry link on the offline page; intercepted rather than run as JS. */
-    private static final String RETRY_URL = "alrayan://retry";
+    private static final String RETRY_URL = "floralfinesse://retry";
 
     private static final String OFFLINE_URL = "file:///android_asset/offline.html";
 
@@ -105,7 +105,7 @@ public class MainActivity extends android.app.Activity {
         // ANDROID_APP_UA_MARKER in store/constants.py matches on this; keep the
         // two in step or the site will offer the app to people already in it.
         s.setUserAgentString(s.getUserAgentString()
-                + " AlRayanApp/" + BuildConfig.VERSION_NAME);
+                + " FloralFinesseApp/" + BuildConfig.VERSION_NAME);
 
         // The cart and messages ride on the Django session cookie.
         CookieManager.getInstance().setAcceptCookie(true);

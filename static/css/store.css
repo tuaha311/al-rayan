@@ -1,5 +1,5 @@
 /* =========================================================================
-   Al Rayan storefront — self-contained stylesheet (no build step).
+   Floral Finesse storefront — self-contained stylesheet (no build step).
    Premium light theme, emerald brand to match the admin.
    ========================================================================= */
 
@@ -171,7 +171,8 @@ img { max-width: 100%; display: block; }
 .site-header .bar { display: flex; align-items: center; gap: 24px; height: var(--header-h);
   justify-content: space-between; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.brand img { width: 80px; height: 90px; flex: none; }
+/* The Floral Finesse mark is a landscape diamond (≈4:3). */
+.brand img { width: 96px; height: 72px; object-fit: contain; flex: none; }
 .brand .sub { color: var(--emerald-700); }
 .brand-text {
   font-family: 'Cinzel', serif;
@@ -183,21 +184,16 @@ img { max-width: 100%; display: block; }
   white-space: nowrap;
   background: linear-gradient(
     180deg,
-    #fff8e7 0%,
-    #f7ddb1 15%,
-    #d59b55 35%,
-    #8c5524 50%,
-    #d59b55 65%,
-    #fff2d5 85%,
-    #c88842 100%
+    #e27a95 0%,
+    #c84462 45%,
+    #9c2f55 70%,
+    #4a1a48 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow:
-    1px 1px 0 #8b5a2b,
-    -1px -1px 0 #fff3d0,
-    0 2px 4px rgba(0,0,0,.45);
+  /* Transparent fill shows the shadow through the letters, so keep it soft. */
+  text-shadow: 0 1px 2px rgba(74, 26, 72, .18);
 }
 .main-nav { display: flex; align-items: center; gap: 4px; margin-left: 8px; }
 .main-nav a { padding: 8px 14px; border-radius: 999px; color: var(--ink-soft);
@@ -492,7 +488,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .site-footer a:hover { color: #fff; }
 .foot-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif;
   font-size: 22px; color: #fff; font-weight: 700; margin-bottom: 12px; }
-.foot-brand img { width: 32px; height: 32px; }
+.foot-brand img { width: 44px; height: 33px; object-fit: contain; }
 .foot-bottom { border-top: 1px solid #292524; margin-top: 30px; padding-top: 18px;
   display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: #78716c; }
 
@@ -535,7 +531,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
    only fits at the very top end. Below that it steps down: compact, then a
    drawer. */
 @media (max-width: 1360px) {
-  .brand img { width: 60px; height: 68px; }
+  .brand img { width: 76px; height: 57px; }
   .brand-text { font-size: 22px; letter-spacing: 2px; }
   .main-nav { margin-left: 0; }
   .main-nav a { padding: 8px 10px; font-size: 14px; }
@@ -580,7 +576,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .filters > summary { display: flex; }
   .filters[open] > summary { margin-bottom: 6px; }
   .site-header .bar { gap: 12px; }
-  .brand img { width: 46px; height: 52px; }
+  .brand img { width: 60px; height: 45px; }
   .brand-text { font-size: 18px; letter-spacing: 2px; }
   .cart-link { padding: 9px 14px; }
 }
@@ -601,6 +597,8 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 }
 
 @media (max-width: 560px) {
+  /* Two words no longer fit beside the cart and menu — stack the wordmark. */
+  .brand-text { white-space: normal; width: min-content; line-height: 1.1; }
   .cart-item { grid-template-columns: 72px minmax(0, 1fr);
     grid-template-areas: "thumb info"
                          "thumb total"
@@ -633,7 +631,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 /* Very small phones (≤360px) — keep the brand from crowding out the cart. */
 @media (max-width: 360px) {
   .brand-text { font-size: 15px; letter-spacing: 1px; }
-  .brand img { width: 38px; height: 44px; }
+  .brand img { width: 48px; height: 36px; }
   .cart-link span:not(.cart-badge) { display: none; }
 }
 

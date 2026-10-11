@@ -32,8 +32,8 @@ from .models import (
     StoreSetting,
 )
 
-admin.site.site_header = 'Al Rayan — Store Admin'
-admin.site.site_title = 'Al Rayan Admin'
+admin.site.site_header = 'Floral Finesse — Store Admin'
+admin.site.site_title = 'Floral Finesse Admin'
 admin.site.index_title = 'Store management'
 
 CURRENCY = constants.CURRENCY_SYMBOL

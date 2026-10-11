@@ -330,7 +330,7 @@ class Command(BaseCommand):
 
     def _seed_settings(self):
         s = StoreSetting.load()
-        s.store_name = 'Al Rayan'
+        s.store_name = 'Floral Finesse'
         s.default_shipping_fee = D('250.00')
         s.free_shipping_threshold = D('10000.00')
         s.cod_enabled = True

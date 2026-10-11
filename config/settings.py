@@ -189,9 +189,9 @@ CONTACT_RECIPIENT_EMAIL = os.environ.get('CONTACT_RECIPIENT_EMAIL', EMAIL_HOST_U
 # https://unfoldadmin.com/docs/
 # ---------------------------------------------------------------------------
 UNFOLD = {
-    'SITE_TITLE': 'Al Rayan Admin',
-    'SITE_HEADER': 'Al Rayan',
-    'SITE_SUBHEADER': 'Cloth House — Store management',
+    'SITE_TITLE': 'Floral Finesse Admin',
+    'SITE_HEADER': 'Floral Finesse',
+    'SITE_SUBHEADER': 'Store management',
     'SITE_SYMBOL': 'checkroom',  # Material Symbols icon used as a fallback mark.
     'SITE_LOGO': lambda request: static('images/logo-transparent.png'),
     'SHOW_HISTORY': True,

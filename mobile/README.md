@@ -1,4 +1,4 @@
-# Al Rayan — Android app
+# Floral Finesse — Android app
 
 A deliberately thin app: one activity, one WebView, the storefront at
 `alrayan.baseUrl`. There is no second implementation of the shop to keep in
@@ -19,14 +19,14 @@ mobile/
 
 ## What the app adds over a browser tab
 
-- Launcher icon and splash with the Al Rayan mark, no browser chrome.
+- Launcher icon and splash with the Floral Finesse mark, no browser chrome.
 - The site's own mobile layout, at the phone's viewport width, portrait-locked
   (drop `android:screenOrientation` from the manifest to allow rotation).
 - Hardware back button walks the site's history.
 - `tel:`, `mailto:`, WhatsApp and third-party links hand off to the right app;
   store links stay inside.
 - A branded offline page with a retry, instead of Chrome's dinosaur.
-- A `AlRayanApp/<version>` User-Agent marker, which the server reads
+- A `FloralFinesseApp/<version>` User-Agent marker, which the server reads
   (`store/constants.py`) to hide the "download our app" prompt in-app.
 
 ## Build
@@ -39,11 +39,11 @@ Also needs an Android SDK (platform 35, build-tools 35). Point at it with
 `ANDROID_HOME`, or a `mobile/local.properties` holding `sdk.dir=…`.
 
 ```bash
-./mobile/build-apk.sh          # release build → static/app/al-rayan.apk
+./mobile/build-apk.sh          # release build → static/app/floral-finesse.apk
 cd mobile && ./gradlew assembleDebug    # or a debug build for a device
 ```
 
-`build-apk.sh` copies the APK to `static/app/al-rayan.apk`, which
+`build-apk.sh` copies the APK to `static/app/floral-finesse.apk`, which
 `store:download_app` (`/app/download/`) serves to the floating prompt on the
 site.
 
@@ -75,7 +75,7 @@ ship it.
 1. Bump `versionCode` (+1) and `versionName` in `app/build.gradle.kts`.
 2. Match `ANDROID_APP_VERSION` in `store/constants.py` — it names the
    downloaded file and labels the prompt.
-3. `./mobile/build-apk.sh`, then commit the refreshed `static/app/al-rayan.apk`.
+3. `./mobile/build-apk.sh`, then commit the refreshed `static/app/floral-finesse.apk`.
 
 Users install over the top; an unchanged `versionCode` will be rejected as a
 downgrade.

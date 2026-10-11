@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the Al Rayan Android app and drop the APK where Django serves it.
+# Build the Floral Finesse Android app and drop the APK where Django serves it.
 #
 #   ./mobile/build-apk.sh
 #
@@ -10,7 +10,7 @@ set -euo pipefail
 
 MOBILE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$MOBILE_DIR")"
-DEST="$REPO_DIR/static/app/al-rayan.apk"
+DEST="$REPO_DIR/static/app/floral-finesse.apk"
 
 cd "$MOBILE_DIR"
 

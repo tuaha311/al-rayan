@@ -5,6 +5,7 @@
     <color name="bg">#FAF9F7</color>
     <color name="ink">#1C1917</color>
     <color name="emerald">#047857</color>
-    <color name="gold">#C9A227</color>
-    <color name="icon_bg">#FFFFFF</color>
+    <!-- Floral Finesse logo: diamond outline / needle, and its mauve backdrop. -->
+    <color name="plum">#4A1A48</color>
+    <color name="icon_bg">#B499A8</color>
 </resources>

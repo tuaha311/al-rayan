@@ -1,5 +1,5 @@
 /* =========================================================================
-   Al Rayan — scroll-scrubbed silk background.
+   Floral Finesse — scroll-scrubbed silk background.
    Draws a 20-frame fabric sequence onto a fixed full-viewport canvas and
    advances the frame with the page's scroll progress (0% → frame 1,
    100% → frame 20). Cover-fits each frame and honours reduced-motion.

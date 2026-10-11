@@ -138,7 +138,7 @@ class ShippingRate(TimeStampedModel):
 class StoreSetting(TimeStampedModel):
     """Singleton holding store-wide configuration."""
 
-    store_name = models.CharField(max_length=120, default='Al Rayan')
+    store_name = models.CharField(max_length=120, default='Floral Finesse')
     currency_code = models.CharField(max_length=8, default=constants.CURRENCY_CODE)
     default_shipping_fee = models.DecimalField(
         max_digits=8, decimal_places=2, default=Decimal('200.00'),

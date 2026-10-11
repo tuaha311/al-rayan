@@ -31,7 +31,7 @@ urlpatterns = [
     re_path(
         r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}
     ),
-    # The Al Rayan storefront owns the site root. The legacy XECOTech landing
+    # The Floral Finesse storefront owns the site root. The legacy XECOTech landing
     # (home app) is kept in the repo but unlinked from routing.
     path('', include('store.urls')),
 ]

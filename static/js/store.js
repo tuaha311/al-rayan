@@ -1,4 +1,4 @@
-/* Al Rayan storefront — lightweight progressive enhancement.
+/* Floral Finesse storefront — lightweight progressive enhancement.
    Everything here is optional: the store works without JS (plain form posts). */
 (function () {
   'use strict';
@@ -46,7 +46,7 @@
   // the card can ever paint. iPhones are skipped: an APK is useless to them.
   var promo = document.getElementById('app-promo');
   if (promo) {
-    var STORE_KEY = 'alrayan:appPromoDismissed';
+    var STORE_KEY = 'floralfinesse:appPromoDismissed';
     var SNOOZE_MS = 14 * 24 * 60 * 60 * 1000;   // shown again after two weeks
     var ua = navigator.userAgent || '';
     var isApple = /iPhone|iPad|iPod/.test(ua) ||

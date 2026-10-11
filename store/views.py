@@ -284,11 +284,11 @@ def download_app(request):
     """
     apk = settings.BASE_DIR / 'static' / ANDROID_APK_PATH
     if not apk.is_file():
-        raise Http404('The Al Rayan app is not available for download yet.')
+        raise Http404('The Floral Finesse app is not available for download yet.')
     return FileResponse(
         apk.open('rb'),
         as_attachment=True,
-        filename=f'al-rayan-{ANDROID_APP_VERSION}.apk',
+        filename=f'floral-finesse-{ANDROID_APP_VERSION}.apk',
         # Android needs this exact type to hand the file to the package
         # installer; anything else and Chrome saves an unopenable blob.
         content_type='application/vnd.android.package-archive',
