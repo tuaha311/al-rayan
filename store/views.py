@@ -3,7 +3,8 @@ from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.core.files.storage import default_storage
+from django.db.models import Count, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -18,6 +19,7 @@ from .models import (
     Fabric,
     Order,
     Product,
+    ProductImage,
     ProductVariant,
     Season,
     ShippingRate,
@@ -62,10 +64,26 @@ def home(request):
     new_arrivals = list(products.order_by('-created_at')[:8])
     on_sale = [p for p in products if p.is_on_sale][:8]
 
-    shop_categories = (
+    # Joined on active products, so the count covers only those.
+    shop_categories = list(
         Category.objects.filter(is_active=True, products__is_active=True)
-        .distinct().order_by('sort_order', 'name')
+        .annotate(n_products=Count('products'))
+        .order_by('sort_order', 'name')
     )
+    # Card photo: the category's own image, else its best product photo.
+    photos = {}
+    for cat_id, path in (
+        ProductImage.objects.filter(
+            is_primary=True, product__is_active=True,
+            product__category__in=[c for c in shop_categories if not c.image],
+        )
+        .order_by('-product__is_featured', '-product__created_at')
+        .values_list('product__category_id', 'image')
+    ):
+        photos.setdefault(cat_id, path)
+    for c in shop_categories:
+        c.card_image = c.image.url if c.image else (
+            default_storage.url(photos[c.pk]) if c.pk in photos else '')
     return render(request, 'store/home.html', {
         'featured': featured,
         'new_arrivals': new_arrivals,

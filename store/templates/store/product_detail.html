@@ -7,7 +7,7 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <p class="meta" style="margin-bottom:18px">
+    <p class="meta pdp-crumbs" style="margin-bottom:18px">
       <a href="{% url 'store:home' %}" class="muted">Home</a> ›
       <a href="{% url 'store:product_list' %}" class="muted">Shop</a> ›
       <a href="{% url 'store:product_list' %}?category={{ product.category.slug }}" class="muted">{{ product.category.name }}</a>

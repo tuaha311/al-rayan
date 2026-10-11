@@ -29,7 +29,8 @@
   --shadow-sm: 0 1px 2px rgba(23, 23, 23, .06);
   --shadow: 0 6px 24px rgba(23, 23, 23, .08);
   --shadow-lg: 0 18px 50px rgba(23, 23, 23, .12);
-  --maxw: 1400px;
+  /* Content runs edge to edge; only the gutter keeps it off the screen edge. */
+  --maxw: none;
 
   /* ---- Liquid glass system -------------------------------------------- */
   --glass-bg: rgba(255, 255, 255, .55);
@@ -312,18 +313,49 @@ body.has-drawer { overflow: hidden; }
 .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;
   stroke-linecap: round; stroke-linejoin: round; }
 
-/* ---- Category pills / strip ------------------------------------------ */
-.cat-strip { display: flex; gap: 12px; flex-wrap: wrap; }
-.cat-card { flex: 1 1 180px; min-width: 160px; background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius); padding: 20px; transition: .18s;
-  box-shadow: var(--glass-highlight), var(--shadow-sm); }
-.cat-card:hover { border-color: rgba(38,38,38,.4); transform: translateY(-2px);
-  box-shadow: var(--glass-highlight), var(--glass-shadow); }
-.cat-card h3 { font-size: 18px; margin: 0 0 4px; }
-.cat-card .count { color: var(--muted); font-size: 13px; }
-.cat-card .arrow { color: var(--charcoal); font-weight: 700; margin-top: 10px; display: inline-block; }
+/* ---- Category carousel --------------------------------------------- */
+/* A scroll-snapping row of photo cards: swipe or trackpad-scroll it, or use
+   the arrows. The column width sets how many fit (5 → 4 → 3, then a peek of
+   the next card on phones so the row reads as scrollable). */
+.cat-nav { display: flex; align-items: center; gap: 8px; }
+.cat-arrow { display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; padding: 0; border: 1px solid var(--line); border-radius: 50%;
+  background: var(--white); color: var(--ink); cursor: pointer; transition: .18s; }
+.cat-arrow[hidden] { display: none; }
+.cat-arrow:hover:not(:disabled) { border-color: var(--charcoal); }
+.cat-arrow:disabled { opacity: .35; cursor: default; }
+.cat-arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round; }
+.cat-rail { --cat-cols: 5; --cat-gap: 16px;
+  display: grid; grid-auto-flow: column; gap: var(--cat-gap);
+  grid-auto-columns: calc((100% - var(--cat-gap) * (var(--cat-cols) - 1)) / var(--cat-cols));
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+  scroll-behavior: smooth; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.cat-rail::-webkit-scrollbar { display: none; }
+.cat-rail:focus-visible { outline: 2px solid var(--charcoal); outline-offset: 4px; }
+.cat-tile { position: relative; display: flex; align-items: flex-end; aspect-ratio: 3 / 4;
+  overflow: hidden; border-radius: var(--radius); scroll-snap-align: start; color: #fff;
+  background: linear-gradient(160deg, #a8738f, #4a1d5c); isolation: isolate; }
+.cat-tile img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%;
+  object-fit: cover; object-position: center 20%; transition: transform .6s ease; }
+.cat-tile::after { content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.6) 100%); }
+.cat-tile:hover img { transform: scale(1.05); }
+.cat-tile__body { display: flex; flex-direction: column; gap: 2px; padding: 18px; }
+.cat-tile__name { font-family: 'Playfair Display', Georgia, serif; font-size: 20px;
+  font-weight: 600; line-height: 1.2; }
+.cat-tile__count { font-size: 13px; opacity: .85; }
+.cat-tile__cta { margin-top: 8px; font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+
+@media (max-width: 1200px) { .cat-rail { --cat-cols: 4; } }
+@media (max-width: 900px) { .cat-rail { --cat-cols: 3; } }
+@media (max-width: 600px) {
+  .cat-rail { --cat-cols: 2.3; --cat-gap: 10px; }
+  .cat-arrow { display: none; }
+  .cat-tile__body { padding: 12px; }
+  .cat-tile__name { font-size: 16px; }
+  .cat-tile__count, .cat-tile__cta { font-size: 12px; }
+}
 
 /* ---- Product grid + cards -------------------------------------------- */
 .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
@@ -459,8 +491,11 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .pagination a:hover { border-color: var(--charcoal); color: var(--charcoal); }
 
 /* ---- Product detail --------------------------------------------------- */
+/* The site runs full width, but a product (and its breadcrumb) reads better
+   held to the old 1400px container, less its 32px gutters. */
+.pdp-crumbs { max-width: 1336px; margin-left: auto; margin-right: auto; }
 .pdp { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 44px;
-  align-items: start; }
+  align-items: start; max-width: 1336px; margin: 0 auto; }
 .gallery .main { aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden;
   border: 1px solid var(--glass-border); background: var(--glass-bg);
   box-shadow: var(--glass-highlight), var(--shadow-sm); }
@@ -686,7 +721,6 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .section { padding: 40px 0; }
   .section-head h2 { font-size: 24px; }
   .pdp h1 { font-size: 27px; }
-  .cat-card { flex-basis: calc(50% - 6px); min-width: 0; }
   /* 16px is the threshold below which iOS Safari zooms the page on focus. */
   .field-input, select.sort, .qty input,
   input[type="text"], input[type="tel"], input[type="email"], textarea, select { font-size: 16px; }
@@ -719,7 +753,6 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 @media (max-width: 420px) {
   :root { --gutter: 16px; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .cat-strip { gap: 10px; }
   .product-body { padding: 12px 12px 14px; }
   .price { font-size: 15px; }
 }
@@ -728,7 +761,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 /* Browsers without backdrop-filter get solid surfaces so nothing turns to
    an unreadable transparent wash. */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .cat-card, .product-card, .filters, .panel,
+  .product-card, .filters, .panel,
   .gallery .main, .pagination a, .pagination span, .flash, .btn-ghost,
   select.sort, .field-input, .app-promo { background: var(--card); }
   .chip, .cod-banner { background: var(--grey-50); }
@@ -738,7 +771,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 @media (prefers-reduced-transparency: reduce) {
   body::before { background: linear-gradient(180deg, #ffffff, var(--bg)); }
   .flash { background: #fff; }
-  .cat-card, .product-card, .filters, .panel, .gallery .main,
+  .product-card, .filters, .panel, .gallery .main,
   .pagination a, .pagination span, .btn-ghost, select.sort, .field-input,
   .app-promo { background: var(--card); }
   .chip, .cod-banner { background: var(--grey-50); }

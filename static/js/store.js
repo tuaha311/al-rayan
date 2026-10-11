@@ -205,6 +205,30 @@
     }
   }
 
+  // --- Shop-by-category carousel -----------------------------------------
+  // The row scrolls natively (swipe / trackpad); the arrows page it by one
+  // view and grey out at either end.
+  var rail = document.getElementById('cat-rail');
+  if (rail) {
+    var railBtns = document.querySelectorAll('[data-cat-step]');
+    var syncRail = function () {
+      var max = rail.scrollWidth - rail.clientWidth;
+      railBtns.forEach(function (btn) {
+        btn.hidden = max <= 1;
+        btn.disabled = btn.getAttribute('data-cat-step') === '-1'
+          ? rail.scrollLeft <= 1 : rail.scrollLeft >= max - 1;
+      });
+    };
+    railBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        rail.scrollBy({ left: parseInt(btn.getAttribute('data-cat-step'), 10) * rail.clientWidth * 0.9 });
+      });
+    });
+    rail.addEventListener('scroll', syncRail, { passive: true });
+    window.addEventListener('resize', syncRail);
+    syncRail();
+  }
+
   // --- Android app prompt ----------------------------------------------
   // Rendered hidden and only revealed here, so a dismissal is honoured before
   // the card can ever paint. iPhones are skipped: an APK is useless to them.

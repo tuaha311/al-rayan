@@ -141,14 +141,26 @@
   <div class="container">
     <div class="section-head">
       <div><span class="eyebrow">Browse</span><h2>Shop by category</h2></div>
-      <a href="{% url 'store:product_list' %}" class="btn btn-ghost btn-sm">All fabric →</a>
+      <div class="cat-nav">
+        {# Revealed by store.js only when the row actually overflows. #}
+        <button type="button" class="cat-arrow" data-cat-step="-1" aria-controls="cat-rail" aria-label="Scroll categories left" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button type="button" class="cat-arrow" data-cat-step="1" aria-controls="cat-rail" aria-label="Scroll categories right" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <a href="{% url 'store:product_list' %}" class="btn btn-ghost btn-sm">All fabric →</a>
+      </div>
     </div>
-    <div class="cat-strip">
+    <div class="cat-rail" id="cat-rail" role="region" aria-label="Categories" tabindex="0">
       {% for cat in shop_categories %}
-        <a class="cat-card" href="{% url 'store:product_list' %}?category={{ cat.slug }}">
-          <h3>{{ cat.name }}</h3>
-          <div class="count">{{ cat.products.count }} product{{ cat.products.count|pluralize }}</div>
-          <span class="arrow">Explore →</span>
+        <a class="cat-tile" href="{% url 'store:product_list' %}?category={{ cat.slug }}">
+          {% if cat.card_image %}<img src="{{ cat.card_image }}" alt="" loading="lazy" decoding="async"/>{% endif %}
+          <span class="cat-tile__body">
+            <span class="cat-tile__name">{{ cat.name }}</span>
+            <span class="cat-tile__count">{{ cat.n_products }} product{{ cat.n_products|pluralize }}</span>
+            <span class="cat-tile__cta">Explore →</span>
+          </span>
         </a>
       {% endfor %}
     </div>
