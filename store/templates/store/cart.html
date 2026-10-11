@@ -26,7 +26,7 @@
                     <img src="{{ line.product.primary_image.url }}" alt="{{ line.product.name }}"/>
                   {% else %}
                     <div class="thumb-fallback">
-                      {% for v in line.product.variants.all|slice:":4" %}<span style="background:{{ v.color.hex_code|default:'#0b3d2e' }}"></span>{% endfor %}
+                      {% for v in line.product.variants.all|slice:":4" %}<span style="background:{{ v.color.hex_code|default:'#a3a3a3' }}"></span>{% endfor %}
                     </div>
                   {% endif %}
                 </a>

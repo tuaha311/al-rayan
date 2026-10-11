@@ -10,7 +10,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="false"
+        android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:theme="@style/AppTheme">
 
         <!-- Portrait only: this is the phone storefront, and the site's mobile

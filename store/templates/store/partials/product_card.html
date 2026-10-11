@@ -10,10 +10,10 @@
     {% else %}
       <div class="thumb-fallback">
         {% for v in product.variants.all|slice:":4" %}
-          <span style="background:{{ v.color.hex_code|default:'#0b3d2e' }}"></span>
+          <span style="background:{{ v.color.hex_code|default:'#a3a3a3' }}"></span>
         {% empty %}
-          <span style="background:#047857"></span><span style="background:#065f46"></span>
-          <span style="background:#059669"></span><span style="background:#064e3b"></span>
+          <span style="background:#262626"></span><span style="background:#404040"></span>
+          <span style="background:#737373"></span><span style="background:#a3a3a3"></span>
         {% endfor %}
       </div>
       <div class="thumb-logo"><span>{{ product.fabric.name|default:product.name }}</span></div>

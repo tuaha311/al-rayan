@@ -17,7 +17,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "pk.alrayan.app"
+        applicationId = "pk.floralfinesse.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -27,6 +27,9 @@ android {
             ?.trimEnd('/')
             ?: error("alrayan.baseUrl is missing from gradle.properties")
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+        // Cleartext stays off unless the storefront itself is plain http
+        // (e.g. a staging IP); an https base URL keeps it blocked.
+        manifestPlaceholders["usesCleartextTraffic"] = baseUrl.startsWith("http://").toString()
     }
 
     signingConfigs {

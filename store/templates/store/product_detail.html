@@ -20,11 +20,11 @@
           {% if product.primary_image %}
             <img src="{{ product.primary_image.url }}" alt="{{ product.name }}"/>
           {% else %}
-            <div class="thumb-fallback" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)">
+            <div class="thumb-fallback">
               {% for v in variants|slice:":9" %}
-                <span style="background:{{ v.color.hex_code|default:'#0b3d2e' }}"></span>
+                <span style="background:{{ v.color.hex_code|default:'#a3a3a3' }}"></span>
               {% empty %}
-                <span style="background:#047857"></span>
+                <span style="background:#262626"></span>
               {% endfor %}
             </div>
             <div class="thumb-logo"><span>{{ product.fabric.name|default:product.name }}</span></div>
