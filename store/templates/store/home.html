@@ -3,28 +3,90 @@
 
 {% block content %}
 {% include "home/partials/flash_screen.html" %}
-<section class="hero">
-  <div class="container">
-    <div>
-      <span class="eyebrow">Pakistani Cloth House</span>
-      <h1>Unstitched fabric, woven for the occasion.</h1>
-      <p>Premium Wash & wear, Cotton, Lawn Cotton, Latha, Boski,  Karandi and embroidered Gents suits in whole-sale price. Choose your color and pay cash on delivery anywhere in Pakistan.</p>
-      <div class="cta">
+<section class="hero hero-ff">
+  <div class="container hero-ff__grid">
+
+    <div class="hero-ff__copy">
+      <span class="hero-ff__eyebrow">Pakistani Cloth House</span>
+      <h1>Unstitched fabric, <em>woven</em> for the occasion.</h1>
+      <p>Premium Wash &amp; Wear, Cotton, Lawn Cotton, Latha, Boski, Karandi and embroidered Gents suits at wholesale prices. Choose your colour and pay cash on delivery anywhere in Pakistan.</p>
+
+      <div class="hero-ff__cta">
         <a href="{% url 'store:product_list' %}" class="btn btn-primary">Shop the collection</a>
         <a href="{% url 'store:product_list' %}?on_sale=1" class="btn btn-ghost">View offers</a>
       </div>
-      <div class="trust" style="margin-top:28px">
-        <div>✓ Cash on Delivery</div>
-        <div>✓ Nationwide shipping</div>
-        <div>✓ Premium fabric</div>
-      </div>
+
+      <ul class="hero-ff__trust">
+        <li>Cash on Delivery</li>
+        <li>Nationwide shipping</li>
+        <li>Premium fabric</li>
+      </ul>
     </div>
-    <div class="hero-art" aria-hidden="true">
-      <div class="swatches">
-        <span style="background:#0b3d2e"></span><span style="background:#36454f"></span><span style="background:#5a1a22"></span>
-        <span style="background:#d8c3a5"></span><span style="background:#1f2a44"></span><span style="background:#6b7a3a"></span>
-        <span style="background:#9c5b34"></span><span style="background:#f3e9d2"></span><span style="background:#4a6a8a"></span>
-      </div>
+
+    <!-- Emblem: diamond label with stitched border, hanger, wordmark, needle & roses -->
+    <div class="hero-ff__art" aria-hidden="true">
+      <svg viewBox="0 0 500 440" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+        <defs>
+          <radialGradient id="ffRoseA" cx="40%" cy="35%" r="70%">
+            <stop offset="0" stop-color="#f7c9d0"/><stop offset="1" stop-color="#d9607a"/>
+          </radialGradient>
+          <radialGradient id="ffRoseB" cx="40%" cy="35%" r="70%">
+            <stop offset="0" stop-color="#fbe3e6"/><stop offset="1" stop-color="#c98a9e"/>
+          </radialGradient>
+          <radialGradient id="ffRoseC" cx="40%" cy="35%" r="70%">
+            <stop offset="0" stop-color="#e9a3b4"/><stop offset="1" stop-color="#9c3f62"/>
+          </radialGradient>
+        </defs>
+
+        <!-- soft shadow -->
+        <polygon points="250,22 490,232 250,442 10,232" fill="rgba(60,20,60,.25)" transform="translate(0,6)"/>
+        <!-- label -->
+        <polygon points="250,10 490,220 250,430 10,220" fill="#fbf1f3" stroke="#4a1d5c" stroke-width="8" stroke-linejoin="miter"/>
+        <!-- stitched border -->
+        <polygon points="250,46 452,220 250,394 48,220" fill="none" stroke="#7d6a8c" stroke-width="3.5" stroke-dasharray="11 8"/>
+
+        <!-- hanger -->
+        <g fill="none" stroke="#4a1d5c" stroke-width="3" stroke-linecap="round">
+          <path d="M250 112 V100 C250 90 262 88 262 78 C262 68 246 68 246 78"/>
+          <path d="M250 112 C225 118 190 126 170 134 C160 138 160 148 172 148 H328 C340 148 340 138 330 134 C310 126 275 118 250 112Z" stroke-width="2.5"/>
+          <circle cx="172" cy="148" r="5"/><circle cx="328" cy="148" r="5"/>
+        </g>
+
+        <!-- wordmark -->
+        <g fill="#d6385e" font-family="'Cormorant Garamond','Playfair Display',Georgia,serif" font-weight="600" text-anchor="middle">
+          <text x="250" y="206" font-size="60" textLength="262" lengthAdjust="spacingAndGlyphs">FLORAL</text>
+          <text x="250" y="262" font-size="64" textLength="296" lengthAdjust="spacingAndGlyphs">FINESSE</text>
+        </g>
+
+        <!-- needle -->
+        <path d="M6 330 C6 320 20 317 40 318 L476 327 L486 329 L476 331 L40 340 C20 341 6 338 6 330Z" fill="#4a1d5c"/>
+        <ellipse cx="34" cy="329" rx="18" ry="4" fill="#fbf1f3"/>
+
+        <!-- floral cluster -->
+        <g>
+          <!-- leaves -->
+          <g fill="#7fae6b" opacity=".95">
+            <ellipse cx="170" cy="322" rx="22" ry="7" transform="rotate(-25 170 322)"/>
+            <ellipse cx="190" cy="300" rx="20" ry="6" transform="rotate(-60 190 300)"/>
+            <ellipse cx="330" cy="322" rx="22" ry="7" transform="rotate(25 330 322)"/>
+            <ellipse cx="312" cy="298" rx="20" ry="6" transform="rotate(60 312 298)"/>
+            <ellipse cx="228" cy="378" rx="18" ry="6" transform="rotate(35 228 378)"/>
+            <ellipse cx="278" cy="378" rx="18" ry="6" transform="rotate(-35 278 378)"/>
+          </g>
+          <circle cx="222" cy="318" r="20" fill="url(#ffRoseC)"/>
+          <circle cx="302" cy="326" r="22" fill="url(#ffRoseA)"/>
+          <circle cx="252" cy="338" r="30" fill="url(#ffRoseB)"/>
+          <circle cx="204" cy="346" r="16" fill="url(#ffRoseA)"/>
+          <circle cx="278" cy="304" r="12" fill="#e8c46a"/>
+          <!-- petal swirls -->
+          <g fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round">
+            <path d="M240 336 q12 -14 24 0 q-10 12 -22 4"/>
+            <path d="M292 326 q10 -10 18 0"/>
+            <path d="M212 316 q8 -8 16 0"/>
+          </g>
+          <g fill="#e98a3b"><circle cx="338" cy="352" r="4"/><circle cx="346" cy="344" r="3"/></g>
+        </g>
+      </svg>
     </div>
   </div>
 </section>

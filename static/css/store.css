@@ -655,3 +655,113 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .nav-toggle, .mobile-nav, .mobile-nav-links a, .app-promo { background: var(--card); }
   .chip, .cod-banner { background: var(--emerald-50); }
 }
+
+/* ===== Floral Finesse hero — add to your stylesheet (remove old .hero / .hero-art / .swatches rules) ===== */
+
+.hero-ff {
+  --ff-plum: #4a1d5c;
+  --ff-mauve: #a8738f;
+  --ff-mauve-dark: #8c5a78;
+  --ff-rose: #d6385e;
+  --ff-cream: #fbf1f3;
+
+  position: relative;
+  overflow: hidden;
+  padding: 72px 0 80px;
+  color: var(--ff-cream);
+  background-color: var(--ff-mauve);
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(255,255,255,.14), transparent 55%),
+    /* botanical line-art pattern, echoing the logo background */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260' fill='none' stroke='%236b3a5c' stroke-opacity='.45' stroke-width='1.4'><g><path d='M60 70c-22-30 6-58 30-40 16 12 6 40-30 40z'/><path d='M60 70c-8-14-8-26 0-38M60 70c10-12 20-20 30-30'/><circle cx='60' cy='70' r='5'/></g><g><path d='M190 190c-24-6-34 22-14 38 14 10 34-6 14-38z'/><path d='M190 190c-8 10-12 22-14 38'/></g><g><path d='M200 40c10-22 36-14 34 6-2 18-26 20-34-6z'/><path d='M200 40l24 12'/></g><g><path d='M30 200c18-14 36 4 22 22-12 14-34 2-22-22z'/></g><circle cx='130' cy='130' r='3'/><circle cx='150' cy='110' r='2'/></svg>");
+  background-size: auto, 260px 260px;
+}
+
+.hero-ff__grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* ---- copy ---- */
+.hero-ff__eyebrow {
+  display: inline-block;
+  padding: 6px 16px;
+  margin-bottom: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ff-plum);
+  background: var(--ff-cream);
+  border: 2px dashed #7d6a8c;           /* stitched label */
+  border-radius: 999px;
+}
+
+.hero-ff h1 {
+  margin: 0 0 16px;
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  line-height: 1.08;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(74,29,92,.35);
+}
+.hero-ff h1 em {
+  font-style: italic;
+  color: #ffd6df;
+}
+
+.hero-ff__copy p {
+  max-width: 54ch;
+  margin: 0 0 26px;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: rgba(255,255,255,.92);
+}
+
+.hero-ff__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.hero-ff__trust {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 0;
+  margin: 28px 0 0;
+  font-size: .92rem;
+  font-weight: 600;
+  color: #fff;
+}
+.hero-ff__trust li::before {
+  content: "✿";
+  margin-right: 8px;
+  color: #ffd6df;
+}
+
+/* ---- emblem ---- */
+.hero-ff__art {
+  display: flex;
+  justify-content: center;
+}
+.hero-ff__art svg {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  filter: drop-shadow(0 18px 28px rgba(60,20,60,.35));
+}
+
+/* ---- responsive ---- */
+@media (max-width: 860px) {
+  .hero-ff { padding: 48px 0 56px; }
+  .hero-ff__grid { grid-template-columns: 1fr; gap: 32px; text-align: center; }
+  .hero-ff__copy p { margin-left: auto; margin-right: auto; }
+  .hero-ff__cta, .hero-ff__trust { justify-content: center; }
+  .hero-ff__art { order: -1; }
+  .hero-ff__art svg { max-width: 340px; }
+}
