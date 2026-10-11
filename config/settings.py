@@ -193,7 +193,7 @@ UNFOLD = {
     'SITE_HEADER': 'Floral Finesse',
     'SITE_SUBHEADER': 'Store management',
     'SITE_SYMBOL': 'checkroom',  # Material Symbols icon used as a fallback mark.
-    'SITE_LOGO': lambda request: static('images/logo-transparent.png'),
+    'SITE_LOGO': lambda request: static('images/logo-floral.png'),
     'SHOW_HISTORY': True,
     'SHOW_VIEW_ON_SITE': False,
     'THEME': None,  # let the user toggle light/dark.

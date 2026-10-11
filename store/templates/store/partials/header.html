@@ -17,8 +17,10 @@
 
     <div class="hdr-col hdr-col--center">
       <a href="{% url 'store:home' %}" class="hdr-logo" aria-label="{{ store_settings.store_name }} home">
-        <img src="{% static 'images/logo-transparent.png' %}" alt="" width="509" height="383"/>
-        <span class="brand-text">{{ store_settings.store_name }}</span>
+        {% comment %} {# The logo carries the name. The white copy shows while the header is
+           transparent over the home hero. #} {% endcomment %}
+        <img class="hdr-logo__dark" src="{% static 'images/logo-floral.png' %}" alt="" width="308" height="388"/>
+        <img class="hdr-logo__light" src="{% static 'images/logo-floral-white.png' %}" alt="" width="308" height="388"/>
       </a>
     </div>
 
@@ -79,8 +81,8 @@
       </li>
       {% for item in main_menu %}
         <li class="mb-menu__item">
-          {# A left-side scrim keeps white labels legible on any photo; the red accent label skips it. #}
-          <div class="mb-card{% if item.accent %} is-accent{% endif %}"{% if item.image %} style="background-image:{% if not item.accent %}linear-gradient(90deg,rgba(0,0,0,.45),rgba(0,0,0,.05) 70%),{% endif %}url('{{ item.image }}')"{% endif %}>
+          {# A left-side scrim keeps the white labels legible on any photo. #}
+          <div class="mb-card"{% if item.image %} style="background-image:linear-gradient(90deg,rgba(0,0,0,.45),rgba(0,0,0,.05) 70%),url('{{ item.image }}')"{% endif %}>
             <a href="{{ item.url }}" class="mb-card__link{% if item.accent %} is-accent{% endif %}">{{ item.label }}</a>
             {% if item.children %}
               <button type="button" class="mb-card__toggle" aria-expanded="false"

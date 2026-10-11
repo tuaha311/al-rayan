@@ -10,12 +10,12 @@
 {% endcomment %}
 <div id="flash-screen"
      data-persist="{% if persist %}1{% else %}0{% endif %}"
-     style="position:fixed;inset:0;z-index:9999;background:#1E0A1C;overflow:hidden;"
+     style="position:fixed;inset:0;z-index:9999;background:#e5e5e5;overflow:hidden;"
      {% if not persist %}aria-hidden="true"{% endif %}>
   <!-- canvas rendered at half resolution; CSS scales it up smoothly (bilinear) -->
   <canvas id="silk-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;image-rendering:auto;"></canvas>
 
-  <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,transparent 50%,rgba(0,0,0,.45) 100%);pointer-events:none;"></div>
+  <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(38,38,38,.12) 0%,transparent 50%,rgba(38,38,38,.28) 100%);pointer-events:none;"></div>
 
   <style>
     /* Percentages alone make the mark postage-stamp-sized on a phone and
@@ -30,22 +30,22 @@
   </style>
 
   <div id="silk-content" style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:0;transition:opacity .6s ease;">
-    <img id="silk-logo" src="{% static 'images/logo-transparent.png' %}" alt="{{ store_settings.store_name|default:'Floral Finesse' }}"
+    <img id="silk-logo" src="{% static 'images/logo-floral.png' %}" alt="{{ store_settings.store_name|default:'Floral Finesse' }}"
          style="opacity:0;transform:translateY(1.5rem);transition:opacity 1s ease,transform 1s ease;" />
 
     {% if persist %}
     <div id="silk-copy" style="max-width:34rem;opacity:0;transform:translateY(1rem);transition:opacity 1s ease .5s,transform 1s ease .5s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
-      <h1 style="margin:1.5rem 0 0;font-size:clamp(1.5rem,4vw,2.25rem);font-weight:600;letter-spacing:.02em;color:rgba(246,229,233,.95);">
+      <h1 style="margin:1.5rem 0 0;font-size:clamp(1.5rem,4vw,2.25rem);font-weight:600;letter-spacing:.02em;color:#262626;">
         {{ headline|default:"This page slipped off the shelf." }}
       </h1>
-      <p style="margin:.85rem 0 0;font-size:clamp(.9rem,2vw,1rem);line-height:1.7;font-weight:300;color:rgba(226,198,214,.7);font-family:Inter,ui-sans-serif,system-ui,sans-serif;">
+      <p style="margin:.85rem 0 0;font-size:clamp(.9rem,2vw,1rem);line-height:1.7;font-weight:300;color:#525252;font-family:Inter,ui-sans-serif,system-ui,sans-serif;">
         {{ subhead|default:"The link may be broken, or the piece has moved on." }}
       </p>
       {% if link_url %}
       <a href="{{ link_url }}"
-         style="display:inline-block;margin-top:1.75rem;padding:.7rem 1.6rem;border:1px solid rgba(246,229,233,.3);border-radius:999px;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:rgba(246,229,233,.92);background:rgba(200,68,98,.12);transition:background .3s ease,border-color .3s ease;"
-         onmouseover="this.style.background='rgba(200,68,98,.28)';this.style.borderColor='rgba(246,229,233,.55)';"
-         onmouseout="this.style.background='rgba(200,68,98,.12)';this.style.borderColor='rgba(246,229,233,.3)';">
+         style="display:inline-block;margin-top:1.75rem;padding:.7rem 1.6rem;border:1px solid rgba(38,38,38,.35);border-radius:999px;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#262626;background:rgba(38,38,38,.05);transition:background .3s ease,border-color .3s ease;"
+         onmouseover="this.style.background='rgba(38,38,38,.12)';this.style.borderColor='rgba(38,38,38,.6)';"
+         onmouseout="this.style.background='rgba(38,38,38,.05)';this.style.borderColor='rgba(38,38,38,.35)';">
         {{ link_label|default:"Back to the shop" }}
       </a>
       {% endif %}
@@ -53,7 +53,7 @@
     {% endif %}
   </div>
 
-  <div id="silk-corner" style="position:absolute;z-index:3;font-size:.75rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;color:rgba(226,198,214,.4);opacity:0;transform:translateY(-1rem);transition:opacity .9s ease .9s,transform .9s ease .9s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
+  <div id="silk-corner" style="position:absolute;z-index:3;font-size:.75rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;color:rgba(38,38,38,.45);opacity:0;transform:translateY(-1rem);transition:opacity .9s ease .9s,transform .9s ease .9s;font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;">
     {% comment %} {{ corner|default:"2025" }} {% endcomment %}
   </div>
 </div>
@@ -141,14 +141,11 @@
         );
         var intensity = Math.max(0, pat - noise(x, y) / 15.0 * noiseI);
 
-        // Floral Finesse palette, sampled from the logo:
-        //   edge  #1E0A1C → rgb( 30, 10,  28)  deepened plum
-        //   mid   #4A1A48 → rgb( 74, 26,  72)  diamond outline / needle
-        //   peak  #8C3C7A → rgb(140, 60, 122)  plum lifted toward the rose wordmark
-        // Peak silk maps to the lit plum sheen; troughs to the edge dark.
-        var r = (30  + 110 * intensity) | 0;   // 30 → 140
-        var g = (10  +  50 * intensity) | 0;   // 10 →  60
-        var b = (28  +  94 * intensity) | 0;   // 28 → 122
+        // Charcoal-and-grey theme: troughs in mid grey #BDBDBD, peaks lit to
+        // near-white #F5F5F5, so the charcoal logo reads on the sheen.
+        var r = (189 + 56 * intensity) | 0;    // 189 → 245
+        var g = r;
+        var b = r;
 
         var idx = (y * w + x) * 4;
         data[idx]   = r;
@@ -160,10 +157,10 @@
 
     ctx.putImageData(img, 0, 0);
 
-    // Radial vignette — darkens edges toward the exact logo corner colour
+    // Radial vignette — edges fall off to the theme charcoal (#262626)
     var vig = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.6);
     vig.addColorStop(0, 'rgba(0,0,0,0)');
-    vig.addColorStop(1, 'rgba(14,4,13,.6)');
+    vig.addColorStop(1, 'rgba(38,38,38,.55)');
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, w, h);
 
