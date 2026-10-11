@@ -1,0 +1,23 @@
+{# Phone-only tab bar. Menu and Search open the same drawers as the header. #}
+{% with page=request.resolver_match.url_name %}
+<nav class="ff-bnav" aria-label="Quick links">
+  <button type="button" class="ff-bnav__item" data-drawer-open="menu-drawer"
+          aria-controls="menu-drawer" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <button type="button" class="ff-bnav__item" data-drawer-open="search-drawer"
+          aria-controls="search-drawer" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/></svg>
+    <span>Search</span>
+  </button>
+  <a href="{% url 'store:home' %}" class="ff-bnav__item"{% if page == 'home' %} aria-current="page"{% endif %}>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5.5v-6h-5v6H4z"/></svg>
+    <span>Home</span>
+  </a>
+  <a href="{% url 'store:product_list' %}" class="ff-bnav__item"{% if page == 'product_list' %} aria-current="page"{% endif %}>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/></svg>
+    <span>Shop</span>
+  </a>
+</nav>
+{% endwith %}

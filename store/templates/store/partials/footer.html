@@ -6,7 +6,7 @@
     </a>
 
     <div class="ftr-grid">
-      <div class="ftr-col">
+      <div class="ftr-col ftr-col--shop">
         <h3 class="ftr-heading">Shop</h3>
         <ul>
           {% for item in main_menu %}
@@ -15,7 +15,7 @@
         </ul>
       </div>
 
-      <div class="ftr-col">
+      <div class="ftr-col ftr-col--info">
         <h3 class="ftr-heading">Information</h3>
         <ul>
           <li><a href="{% url 'store:cart' %}">Your Cart</a></li>
@@ -29,7 +29,7 @@
         </ul>
       </div>
 
-      <div class="ftr-col">
+      <div class="ftr-col ftr-col--care">
         <h3 class="ftr-heading">Customer Care</h3>
         <ul>
           {% if store_settings.contact_phone %}<li><a href="tel:{{ store_settings.contact_phone }}">{{ store_settings.contact_phone }}</a></li>{% endif %}

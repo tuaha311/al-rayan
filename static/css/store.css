@@ -24,6 +24,8 @@
   --gutter: 32px;
   /* Top bar + header (+ link row on desktop); the header scrolls away. */
   --header-h: 163px;
+  /* Phone tab bar height (0 where the bar is hidden); content clears it. */
+  --bnav-h: 0px;
   --shadow-sm: 0 1px 2px rgba(23, 23, 23, .06);
   --shadow: 0 6px 24px rgba(23, 23, 23, .08);
   --shadow-lg: 0 18px 50px rgba(23, 23, 23, .12);
@@ -659,11 +661,23 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 }
 
 @media (max-width: 767px) {
+  :root { --bnav-h: 58px; }
+  body { padding-bottom: calc(var(--bnav-h) + env(safe-area-inset-bottom)); }
   .ff-topbar { font-size: 14px; }
-  .ftr-inner { padding: 30px 15px 20px; }
-  .ftr-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .ftr-heading { margin-bottom: 16px; }
-  .ftr-col { padding-bottom: 14px; }
+
+  /* Minimal footer: the tab bar already covers the shop menu and search, so
+     phones get the logo, one centred line of links each for information and
+     contact, the social icons and the copyright. */
+  .ftr-inner { padding: 24px 15px 14px; }
+  .ftr-logo { margin-bottom: 16px; }
+  .ftr-logo img { height: 60px; }
+  .ftr-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; text-align: center; }
+  .ftr-col--shop, .ftr-col--wide, .ftr-heading { display: none; }
+  .ftr-col ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px;
+    font-size: 13px; }
+  .ftr-col li { margin: 0; }
+  .ftr-social { justify-content: center; margin-top: 10px; }
+  .ftr-bottom { font-size: 12px; }
 }
 
 @media (max-width: 760px) {
@@ -698,7 +712,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   /* Phones get a bottom sheet instead of a corner card — it is the device the
      APK is actually for, so the offer earns the full width. */
   .app-promo { left: 10px; right: 10px; width: auto; max-width: none;
-    bottom: calc(10px + env(safe-area-inset-bottom)); border-radius: 20px; }
+    bottom: calc(var(--bnav-h) + 10px + env(safe-area-inset-bottom)); border-radius: 20px; }
   .app-promo-cta { align-self: stretch; }
 }
 
@@ -916,7 +930,8 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 
 .hero-slider { position: relative; display: grid; color: #fff;
   /* Exactly one screen below the 30px strip, so it is fully visible at the top. */
-  min-height: calc(100vh - 30px); min-height: calc(100svh - 30px);
+  min-height: calc(100vh - 30px - var(--bnav-h));
+  min-height: calc(100svh - 30px - var(--bnav-h) - env(safe-area-inset-bottom));
   margin-top: calc(30px - var(--header-h));
   touch-action: pan-y; }
 /* Every slide shares one grid cell: the tallest sets the height, and they
@@ -991,7 +1006,8 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
    slides, so the hero gets a fixed height, the copy tightens up and the
    emblem takes whatever room is left. */
 @media (max-width: 860px) and (min-height: 560px) {
-  .hero-slider { height: calc(100vh - 30px); height: calc(100svh - 30px); }
+  .hero-slider { height: calc(100vh - 30px - var(--bnav-h));
+    height: calc(100svh - 30px - var(--bnav-h) - env(safe-area-inset-bottom)); }
   .hero-slider .hero-ff { align-items: stretch;
     padding: calc(var(--header-h) - 30px + 16px) 0 72px; }
   .hero-slider .hero-ff__grid { display: flex; flex-direction: column; justify-content: center;
@@ -1010,6 +1026,12 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .hero-slider .hero-ff__trust li::before { margin-right: 4px; }
 }
 
+/* Short phones, now also minus the tab bar: the trust line repeats the top
+   strip, so it gives its room to the emblem. */
+@media (max-width: 560px) and (min-height: 560px) and (max-height: 740px) {
+  .hero-slider .hero-ff__trust { display: none; }
+}
+
 @media (max-width: 560px) {
   .hs-caption { padding-bottom: 92px; }
   .hs-text { margin-bottom: 22px; }
@@ -1022,4 +1044,28 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 @media (prefers-reduced-motion: reduce) {
   .hs-slide, .hs-slide.is-active, .hs-caption > * { transition-duration: .01s; transition-delay: 0s !important; }
   .hs-img { transform: none; transition: none; }
+}
+
+/* ===== Phone tab bar ===== */
+/* Fixed to the bottom on phones only; sits under
+   the drawer overlay so an open drawer covers it. */
+.ff-bnav { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 400;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: calc(var(--bnav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #fff; border-top: 1px solid #e3e3e3; box-shadow: 0 -2px 12px rgba(0, 0, 0, .05);
+  font-family: 'Figtree', sans-serif; }
+.ff-bnav__item { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; min-width: 0; padding: 0; border: 0; background: none; cursor: pointer;
+  color: #222; font: inherit; font-size: 12px; font-weight: 500; line-height: 1;
+  -webkit-tap-highlight-color: transparent; }
+.ff-bnav__item svg { width: 24px; height: 24px; fill: none; stroke: currentColor;
+  stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.ff-bnav__item[aria-current="page"] { color: #b85b72; }
+.ff-bnav__item[aria-current="page"] svg { stroke-width: 1.7; }
+.ff-bnav__item:active { opacity: .6; }
+@media (max-width: 767px) {
+  .ff-bnav { display: grid; }
+  /* Keep the app offer above the bar. */
+  .app-promo { bottom: calc(var(--bnav-h) + 12px + env(safe-area-inset-bottom)); }
 }
