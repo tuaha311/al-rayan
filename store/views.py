@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from .cart import Cart
 from .constants import ANDROID_APK_PATH, ANDROID_APP_VERSION
 from .forms import CheckoutForm
+from .menu import MAIN_MENU
 from .models import (
     Category,
     Color,
@@ -39,6 +40,17 @@ def _on_sale_ids(products):
     return [p.id for p in products if p.is_on_sale]
 
 
+def _hero_slides():
+    """Categories for the home carousel, in main-menu order. Only those with
+    their own image qualify — a full-screen slide needs a real photo."""
+    slugs = [slug for _, _, slug, _ in MAIN_MENU if slug]
+    found = {
+        c.slug: c for c in
+        Category.objects.filter(is_active=True, slug__in=slugs, image__gt='')
+    }
+    return [found[s] for s in slugs if s in found]
+
+
 # ---------------------------------------------------------------------------
 # Storefront pages
 # ---------------------------------------------------------------------------
@@ -59,6 +71,7 @@ def home(request):
         'new_arrivals': new_arrivals,
         'on_sale': on_sale,
         'shop_categories': shop_categories,
+        'hero_slides': _hero_slides(),
     })
 
 

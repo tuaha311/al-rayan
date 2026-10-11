@@ -169,10 +169,15 @@ img { max-width: 100%; display: block; }
   padding: 0 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ff-topbar a { color: inherit; }
 
-.site-header { position: relative; z-index: 60; background: #fff; color: #050505;
+.site-header { position: relative; z-index: 60;
+  /* Colours live in variables so the home page can flip the whole bar to
+     transparent (over the hero) in one rule. */
+  --hdr-bg: #fff; --hdr-fg: #050505; --hdr-line: #e3e3e3;
+  --hdr-badge-bg: #000; --hdr-badge-fg: #fff; --hdr-brand: transparent;
+  background: var(--hdr-bg); color: var(--hdr-fg);
   font-family: 'Figtree', sans-serif; font-weight: 300; font-size: 14px; }
 .hdr-mid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  min-height: 80px; margin: 0 30px; border-bottom: 1px solid #e3e3e3; }
+  min-height: 80px; margin: 0 30px; border-bottom: 1px solid var(--hdr-line); }
 .hdr-col { display: flex; align-items: center; min-width: 0; }
 .hdr-col--center { justify-content: center; }
 .hdr-col--right { justify-content: flex-end; gap: 16px; }
@@ -195,7 +200,7 @@ img { max-width: 100%; display: block; }
   stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .hdr-cart { position: relative; }
 .hdr-count { position: absolute; top: -4px; right: -6px; min-width: 15px; height: 15px;
-  padding: 0 3px; border-radius: 15px; background: #000; color: #fff;
+  padding: 0 3px; border-radius: 15px; background: var(--hdr-badge-bg); color: var(--hdr-badge-fg);
   font-size: 10px; font-weight: 400; line-height: 15px; text-align: center; }
 
 .hdr-nav { text-align: center; }
@@ -205,7 +210,7 @@ img { max-width: 100%; display: block; }
    down into its dropdown without leaving the item. */
 .hdr-nav__item { position: relative; padding: 15px 0; }
 .hdr-nav__link { display: flex; align-items: center; padding: 5px 17.5px; line-height: 13px;
-  font-size: 13px; font-weight: 500; text-transform: uppercase; color: #050505; }
+  font-size: 13px; font-weight: 500; text-transform: uppercase; color: var(--hdr-fg); }
 .hdr-nav__link.is-accent { color: #ec0101; }
 
 .hdr-sub { position: absolute; top: 100%; left: 0; z-index: 5; display: flex; gap: 10px;
@@ -619,7 +624,8 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 
 /* Below 1025px the link row gives way to the menu drawer. */
 @media (max-width: 1024px) {
-  :root { --header-h: 90px; }
+  /* 30px strip + 63px bar (52px logo, 5px padding, 1px rule). */
+  :root { --header-h: 93px; }
   .hdr-nav { display: none; }
   .hdr-burger { display: inline-flex; }
   .hdr-mid { min-height: 60px; margin: 0 15px; }
@@ -888,4 +894,132 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 .brand-text span:last-child {
   font-size: 34px;
   letter-spacing: -2px;
+}
+/* ===== Home hero carousel ===== */
+/* The hero fills the screen under the announcement strip and slides up
+   beneath the header, which stays transparent while the whole hero is in
+   view (store.js adds .is-solid once it starts scrolling away). */
+.page-home .site-header { position: sticky; top: 0;
+  transition: background-color .35s ease, color .35s ease, box-shadow .35s ease; }
+.page-home .site-header.is-solid { box-shadow: 0 1px 10px rgba(0, 0, 0, .08); }
+.page-home .site-header:not(.is-solid):not(:has(:focus-visible)) {
+  --hdr-bg: transparent; --hdr-fg: #fff; --hdr-line: rgba(255, 255, 255, .35);
+  --hdr-badge-bg: #fff; --hdr-badge-fg: #000; --hdr-brand: #fff; }
+/* Pointing at the bar (e.g. to open a dropdown) brings the white back. */
+@media (hover: hover) {
+  .page-home .site-header:not(.is-solid):hover {
+    --hdr-bg: #fff; --hdr-fg: #050505; --hdr-line: #e3e3e3;
+    --hdr-badge-bg: #000; --hdr-badge-fg: #fff; --hdr-brand: transparent; }
+}
+.hdr-logo .brand-text { -webkit-text-fill-color: var(--hdr-brand); }
+.hdr-mid { transition: border-color .35s ease; }
+
+.hero-slider { position: relative; display: grid; color: #fff;
+  /* Exactly one screen below the 30px strip, so it is fully visible at the top. */
+  min-height: calc(100vh - 30px); min-height: calc(100svh - 30px);
+  margin-top: calc(30px - var(--header-h));
+  touch-action: pan-y; }
+/* Every slide shares one grid cell: the tallest sets the height, and they
+   cross-fade in place. */
+.hs-slide { grid-area: 1 / 1; min-width: 0; opacity: 0; visibility: hidden;
+  transition: opacity .9s ease, visibility 0s linear .9s; }
+.hs-slide.is-active { z-index: 1; opacity: 1; visibility: visible;
+  transition: opacity .9s ease, visibility 0s; }
+
+/* Slide 1: the brand hero, its copy pushed below the overlaid header. */
+.hero-slider .hero-ff { display: flex; align-items: center;
+  padding: calc(var(--header-h) - 30px + clamp(24px, 4vw, 56px)) 0 clamp(80px, 9vw, 110px); }
+
+/* Category slides: full-bleed photo, scrims top (header) and bottom (caption). */
+.hs-slide--image { position: relative; overflow: hidden; display: flex;
+  align-items: flex-end; justify-content: center; background: #2b1a31; }
+.hs-img { position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center 22%;
+  transform: scale(1.08); transition: transform 7s ease-out; }
+.hs-slide.is-active .hs-img { transform: none; }
+.hs-slide--image::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .45) 0, rgba(0, 0, 0, 0) 26%,
+    rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, .62) 100%); }
+.hs-caption { position: relative; z-index: 1; max-width: 760px; text-align: center;
+  padding: 0 var(--gutter) clamp(96px, 13vh, 140px);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, .35); }
+.hs-caption > * { opacity: 0; transform: translateY(18px);
+  transition: opacity .7s ease, transform .7s ease; }
+.hs-slide.is-active .hs-caption > * { opacity: 1; transform: none; }
+.hs-slide.is-active .hs-caption > :nth-child(1) { transition-delay: .3s; }
+.hs-slide.is-active .hs-caption > :nth-child(2) { transition-delay: .42s; }
+.hs-slide.is-active .hs-caption > :nth-child(3) { transition-delay: .54s; }
+.hs-slide.is-active .hs-caption > :nth-child(4) { transition-delay: .66s; }
+.hs-eyebrow { display: block; font-family: 'Figtree', sans-serif; font-size: 13px;
+  font-weight: 400; letter-spacing: .32em; text-transform: uppercase; }
+.hs-title { margin: 10px 0 12px; font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.5rem, 1.5rem + 4vw, 4.75rem); font-weight: 600; line-height: 1.04;
+  color: #fff; text-wrap: balance; }
+.hs-text { max-width: 46ch; margin: 0 auto 28px; font-size: clamp(.98rem, .9rem + .3vw, 1.1rem);
+  line-height: 1.6; color: rgba(255, 255, 255, .92); }
+.hs-btn { display: inline-flex; align-items: center; justify-content: center;
+  min-height: 50px; padding: 0 36px; border: 1px solid #fff; color: #fff;
+  font-family: 'Figtree', sans-serif; font-size: 13px; font-weight: 500;
+  letter-spacing: .22em; text-transform: uppercase; text-shadow: none;
+  transition: background-color .25s, color .25s; }
+.hs-btn:hover, .hs-btn:focus-visible { background: #fff; color: #111; }
+
+/* Prev · dots · next · pause, centred along the bottom edge. */
+.hs-controls { position: absolute; left: 0; right: 0; bottom: clamp(18px, 4vh, 34px); z-index: 2;
+  display: flex; align-items: center; justify-content: center; gap: 6px; }
+.hs-controls[hidden] { display: none; }
+.hs-dots { display: flex; }
+.hs-dot, .hs-btn-icon { display: inline-flex; align-items: center; justify-content: center;
+  padding: 0; border: 0; background: none; color: #fff; cursor: pointer; }
+.hs-dot { width: 26px; height: 32px; }
+.hs-dot::before { content: ""; width: 8px; height: 8px; border-radius: 8px;
+  background: rgba(255, 255, 255, .55); box-shadow: 0 0 4px rgba(0, 0, 0, .25);
+  transition: width .3s ease, background-color .3s ease; }
+.hs-dot[aria-current="true"]::before { width: 22px; background: #fff; }
+.hs-btn-icon { width: 36px; height: 36px; border-radius: 50%; transition: background-color .2s; }
+.hs-btn-icon:hover { background: rgba(255, 255, 255, .18); }
+.hs-btn-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor;
+  stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, .3)); }
+.hs-pause { margin-left: 4px; }
+.hs-pause svg { width: 16px; height: 16px; }
+.hs-pause__on { fill: currentColor; }
+.hs-pause .hs-pause__on, .hs-pause.is-paused .hs-pause__off { display: none; }
+.hs-pause.is-paused .hs-pause__on { display: block; }
+
+/* Phones and portrait tablets: slide 1 must fit one screen like the photo
+   slides, so the hero gets a fixed height, the copy tightens up and the
+   emblem takes whatever room is left. */
+@media (max-width: 860px) and (min-height: 560px) {
+  .hero-slider { height: calc(100vh - 30px); height: calc(100svh - 30px); }
+  .hero-slider .hero-ff { align-items: stretch;
+    padding: calc(var(--header-h) - 30px + 16px) 0 72px; }
+  .hero-slider .hero-ff__grid { display: flex; flex-direction: column; justify-content: center;
+    gap: 18px; }
+  .hero-slider .hero-ff__copy { flex: none; }
+  .hero-slider .hero-ff__art { flex: 0 1 min(300px, 36svh); min-height: 0; }
+  .hero-slider .hero-ff__art svg { width: auto; height: 100%; max-width: 72vw; }
+}
+@media (max-width: 560px) and (min-height: 560px) {
+  .hero-slider .hero-ff__eyebrow { margin-bottom: 12px; }
+  .hero-slider .hero-ff h1 { margin-bottom: 12px; }
+  .hero-slider .hero-ff__copy p { margin-bottom: 16px; font-size: .92rem; line-height: 1.55; }
+  .hero-slider .hero-ff__cta { flex-direction: row; gap: 10px; }
+  .hero-slider .hero-ff__cta .btn { width: auto; padding: 12px 18px; }
+  .hero-slider .hero-ff__trust { gap: 6px 12px; margin-top: 16px; font-size: .78rem; }
+  .hero-slider .hero-ff__trust li::before { margin-right: 4px; }
+}
+
+@media (max-width: 560px) {
+  .hs-caption { padding-bottom: 92px; }
+  .hs-text { margin-bottom: 22px; }
+  .hs-btn { min-height: 46px; padding: 0 26px; letter-spacing: .16em; }
+  .hs-dot { width: 20px; }
+  .hs-dot::before { width: 6px; height: 6px; }
+  .hs-dot[aria-current="true"]::before { width: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-slide, .hs-slide.is-active, .hs-caption > * { transition-duration: .01s; transition-delay: 0s !important; }
+  .hs-img { transform: none; transition: none; }
 }

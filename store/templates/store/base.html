@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="{% static 'css/store.css' %}"/>
   {% block head %}{% endblock %}
 </head>
-<body>
+<body{% block body_class %}{% endblock %}>
   <canvas id="silk-bg" aria-hidden="true"
           data-frame-url="{% static 'scrolls/ezgif-frame-' %}"></canvas>
   <script src="{% static 'js/silk-bg.js' %}" defer></script>

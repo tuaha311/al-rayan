@@ -98,6 +98,113 @@
     });
   }
 
+  // --- Home hero carousel ------------------------------------------------
+  var hero = document.getElementById('hero');
+  if (hero) {
+    // The header is transparent while the whole hero is on screen, and turns
+    // solid as soon as the hero's top edge scrolls under it.
+    var siteHeader = document.querySelector('.site-header');
+    var headerTick = false;
+    var syncHeader = function () {
+      headerTick = false;
+      siteHeader.classList.toggle('is-solid', hero.getBoundingClientRect().top < 0);
+    };
+    window.addEventListener('scroll', function () {
+      if (!headerTick) { headerTick = true; requestAnimationFrame(syncHeader); }
+    }, { passive: true });
+    window.addEventListener('resize', syncHeader);
+    syncHeader();
+
+    var slides = hero.querySelectorAll('.hs-slide');
+    var controls = hero.querySelector('.hs-controls');
+    if (controls && slides.length > 1) {
+      var dots = hero.querySelectorAll('.hs-dot');
+      var pauseBtn = hero.querySelector('.hs-pause');
+      var INTERVAL = 6000;
+      var current = 0;
+      var timer = null;
+      var playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Photos sit in data-src until their slide is (nearly) up.
+      var prime = function (i) {
+        var img = slides[i] && slides[i].querySelector('img[data-src]');
+        if (img) { img.src = img.getAttribute('data-src'); img.removeAttribute('data-src'); }
+      };
+
+      var schedule = function () {
+        clearTimeout(timer);
+        // Hold still while someone is keyboard-focused inside the hero.
+        if (!playing || document.hidden || hero.querySelector(':focus-visible')) return;
+        timer = setTimeout(function () { go(current + 1); }, INTERVAL);
+      };
+
+      var go = function (i) {
+        i = (i + slides.length) % slides.length;
+        if (i !== current) {
+          var prev = slides[current];
+          prev.classList.remove('is-active');
+          prev.setAttribute('aria-hidden', 'true');
+          prev.inert = true;
+          dots[current].removeAttribute('aria-current');
+          current = i;
+          prime(i);
+          slides[i].classList.add('is-active');
+          slides[i].removeAttribute('aria-hidden');
+          slides[i].inert = false;
+          dots[i].setAttribute('aria-current', 'true');
+          prime((i + 1) % slides.length);
+        }
+        schedule();
+      };
+
+      var setPlaying = function (on) {
+        playing = on;
+        pauseBtn.classList.toggle('is-paused', !on);
+        pauseBtn.setAttribute('aria-label', on ? 'Pause slideshow' : 'Play slideshow');
+        // Announce slide changes only when the user is driving them.
+        hero.setAttribute('aria-live', on ? 'off' : 'polite');
+        schedule();
+      };
+
+      controls.hidden = false;
+      dots.forEach(function (dot, i) {
+        dot.addEventListener('click', function () { go(i); });
+      });
+      hero.querySelectorAll('[data-hs-step]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          go(current + parseInt(btn.getAttribute('data-hs-step'), 10));
+        });
+      });
+      pauseBtn.addEventListener('click', function () { setPlaying(!playing); });
+
+      hero.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') go(current - 1);
+        else if (e.key === 'ArrowRight') go(current + 1);
+      });
+      hero.addEventListener('focusin', schedule);
+      hero.addEventListener('focusout', function () { setTimeout(schedule, 0); });
+      document.addEventListener('visibilitychange', schedule);
+
+      // Horizontal swipe on touch screens (vertical drags still scroll).
+      var startX = null, startY = 0;
+      hero.addEventListener('pointerdown', function (e) {
+        if (e.pointerType !== 'mouse') { startX = e.clientX; startY = e.clientY; }
+      });
+      hero.addEventListener('pointercancel', function () { startX = null; });
+      hero.addEventListener('pointerup', function (e) {
+        if (startX === null) return;
+        var dx = e.clientX - startX, dy = e.clientY - startY;
+        startX = null;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(current + (dx < 0 ? 1 : -1));
+      });
+
+      // Fetch the next photo once the page itself has finished loading.
+      if (document.readyState === 'complete') prime(1);
+      else window.addEventListener('load', function () { prime(1); });
+      setPlaying(playing);
+    }
+  }
+
   // --- Android app prompt ----------------------------------------------
   // Rendered hidden and only revealed here, so a dismissal is honoured before
   // the card can ever paint. iPhones are skipped: an APK is useless to them.
