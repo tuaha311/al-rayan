@@ -20,6 +20,8 @@ MAIN_MENU = [
     ('Embroidered', {'category': 'embroidered'}, 'embroidered', False),
     ('3D Embellished', {'category': '3d-embellished'}, '3d-embellished', False),
     ('Digital Printed', {'category': 'digital-printed'}, 'digital-printed', False),
+    ('Formals', {'category': 'formals'}, 'formals', False),
+    ('Bridal Couture', {'category': 'bridal-couture'}, 'bridal-couture', False),
     ('Shawls', {'category': 'shawls'}, 'shawls', False),
     ('Sale', {'on_sale': '1'}, None, True),
 ]
