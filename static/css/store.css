@@ -22,7 +22,8 @@
   /* Single source of truth for the page gutter — the header, every .container
      and the flash stack all read it, so they stay flush at any width. */
   --gutter: 32px;
-  --header-h: 80px;
+  /* Top bar + header (+ link row on desktop); the header scrolls away. */
+  --header-h: 163px;
   --shadow-sm: 0 1px 2px rgba(23, 23, 23, .06);
   --shadow: 0 6px 24px rgba(23, 23, 23, .08);
   --shadow-lg: 0 18px 50px rgba(23, 23, 23, .12);
@@ -160,95 +161,146 @@ img { max-width: 100%; display: block; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ---- Header ----------------------------------------------------------- */
-.site-header {
-  position: sticky; top: 0; z-index: 50;
-  background: var(--glass-bg-strong);
-  -webkit-backdrop-filter: var(--glass-blur-lg); backdrop-filter: var(--glass-blur-lg);
-  border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 4px 24px rgba(23,23,23,.06), inset 0 -1px 0 rgba(255,255,255,.4);
-}
-.site-header .header-inner { padding-left: var(--gutter); padding-right: var(--gutter); }
-.site-header .bar { display: flex; align-items: center; gap: 24px; height: var(--header-h);
-  justify-content: space-between; }
-.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-/* The Floral Finesse mark is a landscape diamond (≈4:3). */
-.brand img { width: 96px; height: 72px; object-fit: contain; flex: none; }
-.brand .sub { color: var(--charcoal); }
+/* Announcement strip, then a white header: centred logo between the menu
+   button and the search/cart icons, with the link row underneath on desktop.
+   Header and footer use Figtree at light weights. */
+.ff-topbar { background: #272727; color: #fff; text-align: center;
+  font-family: 'Figtree', sans-serif; font-weight: 300; font-size: 18px; line-height: 30px;
+  padding: 0 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ff-topbar a { color: inherit; }
+
+.site-header { position: relative; z-index: 60; background: #fff; color: #050505;
+  font-family: 'Figtree', sans-serif; font-weight: 300; font-size: 14px; }
+.hdr-mid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  min-height: 80px; margin: 0 30px; border-bottom: 1px solid #e3e3e3; }
+.hdr-col { display: flex; align-items: center; min-width: 0; }
+.hdr-col--center { justify-content: center; }
+.hdr-col--right { justify-content: flex-end; gap: 16px; }
+
+.hdr-logo { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+.hdr-logo img { width: auto; height: 66px; flex: none; }
 .brand-text {
-  font-family: 'Cinzel', serif;
-  font-size: 26px;
-  font-weight: 500;
-  letter-spacing: 3px;
-  min-width: 0;
-  text-transform: uppercase;
-  white-space: nowrap;
-  background: linear-gradient(
-    180deg,
-    #e27a95 0%,
-    #c84462 45%,
-    #9c2f55 70%,
-    #4a1a48 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-family: 'Cinzel', serif; font-size: 24px; font-weight: 500; letter-spacing: 3px;
+  text-transform: uppercase; white-space: nowrap; line-height: 1;
+  background: linear-gradient(180deg, #e27a95 0%, #c84462 45%, #9c2f55 70%, #4a1a48 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   /* Transparent fill shows the shadow through the letters, so keep it soft. */
   text-shadow: 0 1px 2px rgba(74, 26, 72, .18);
 }
-.main-nav { display: flex; align-items: center; gap: 4px; margin-left: 8px; }
-.main-nav a { padding: 8px 14px; border-radius: 999px; color: var(--ink-soft);
-  font-weight: 500; transition: .15s; white-space: nowrap; }
-.main-nav a:hover { background: var(--grey-50); color: var(--charcoal); }
-.header-actions { display: flex; align-items: center; gap: 8px; }
 
-.search-mini { display: flex; align-items: center; background: var(--glass-bg-soft);
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border); border-radius: 999px; padding: 6px 10px; gap: 6px;
-  box-shadow: var(--glass-highlight); }
-.search-mini:focus-within { border-color: rgba(38,38,38,.4);
-  box-shadow: var(--glass-highlight), 0 0 0 3px var(--glass-tint); }
-.search-mini input { border: 0; background: transparent; outline: 0; font: inherit;
-  width: 150px; }
-.search-mini button { border: 0; background: transparent; cursor: pointer; color: var(--muted);
-  display: flex; }
+.hdr-burger, .hdr-icon { display: inline-flex; align-items: center; justify-content: center;
+  padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.hdr-burger { display: none; width: 30px; height: 30px; }
+.hdr-icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.hdr-cart { position: relative; }
+.hdr-count { position: absolute; top: -4px; right: -6px; min-width: 15px; height: 15px;
+  padding: 0 3px; border-radius: 15px; background: #000; color: #fff;
+  font-size: 10px; font-weight: 400; line-height: 15px; text-align: center; }
 
-.cart-link { position: relative; display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 16px; border-radius: 999px; color: #fff; font-weight: 600;
-  background: linear-gradient(180deg, rgba(64,64,64,.92), rgba(38,38,38,.92));
-  border: 1px solid rgba(255,255,255,.25);
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-highlight), 0 6px 18px rgba(38,38,38,.32);
-  transition: transform .18s ease, box-shadow .18s ease; }
-.cart-link:hover { transform: translateY(-1px);
-  box-shadow: var(--glass-highlight), 0 12px 26px rgba(38,38,38,.4); }
-.cart-badge { background: var(--grey); color: #171717; border-radius: 999px;
-  font-size: 11px; font-weight: 800; min-width: 18px; height: 18px; padding: 0 5px;
-  display: inline-flex; align-items: center; justify-content: center; }
+.hdr-nav { text-align: center; }
+.hdr-nav__ul { display: inline-flex; flex-wrap: wrap; justify-content: center;
+  list-style: none; margin: 0; padding: 0; }
+/* Vertical padding fills the 53px row, so the pointer can travel from a link
+   down into its dropdown without leaving the item. */
+.hdr-nav__item { position: relative; padding: 15px 0; }
+.hdr-nav__link { display: flex; align-items: center; padding: 5px 17.5px; line-height: 13px;
+  font-size: 13px; font-weight: 500; text-transform: uppercase; color: #050505; }
+.hdr-nav__link.is-accent { color: #ec0101; }
 
-/* Hamburger — hidden until the desktop nav moves into the drawer at 1200px. */
-.nav-toggle { display: none; flex: none; width: 44px; height: 44px; padding: 0;
-  align-items: center; justify-content: center; cursor: pointer;
-  border: 1px solid var(--glass-border); border-radius: 12px; color: var(--ink);
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-highlight), var(--shadow-sm); }
-.nav-toggle .icon { width: 22px; height: 22px; }
-.nav-toggle .icon-close, .nav-toggle[aria-expanded="true"] .icon-open { display: none; }
-.nav-toggle[aria-expanded="true"] .icon-close { display: block; }
+.hdr-sub { position: absolute; top: 100%; left: 0; z-index: 5; display: flex; gap: 10px;
+  width: 440px; padding: 20px; background: #fff; text-align: left;
+  box-shadow: 0 0 3px rgba(0, 0, 0, .15);
+  opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(15px);
+  transition: opacity .2s, visibility .2s, transform .2s; }
+.hdr-nav__item:hover > .hdr-sub, .hdr-nav__item:focus-within > .hdr-sub {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: none; }
+.hdr-sub__links { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+.hdr-sub__links a { font-size: 13px; font-weight: 300; line-height: 1.5; color: #000;
+  padding: 3px 0; }
+.hdr-sub__links a:hover { color: #ad7936; }
+.hdr-sub__links .hdr-sub__heading { font-weight: 600; color: #222; text-transform: uppercase;
+  padding: 0 0 8px; margin-bottom: 6px; border-bottom: 1px solid #eee; }
+.hdr-sub__links .hdr-sub__all { font-weight: 600; color: #ad7936; }
+.hdr-sub__banner { flex: 1 1 0; min-width: 0; aspect-ratio: 4 / 5; position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 12px; text-align: center; color: #fff; overflow: hidden;
+  background: linear-gradient(160deg, #a8738f, #4a1d5c) center / cover no-repeat; }
+.hdr-sub__banner::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .18); }
+.hdr-sub__banner > span { position: relative; }
+.hdr-sub__banner-title { font-size: 18px; font-weight: 500; line-height: 1.35; }
+.hdr-sub__banner-cta { font-size: 14px; font-weight: 400; }
 
-/* Mobile drawer — search + the full link list the desktop bar can't hold. */
-.mobile-nav { display: none; border-top: 1px solid var(--glass-border);
-  padding: 14px var(--gutter) 20px; max-height: calc(100vh - var(--header-h));
-  max-height: calc(100dvh - var(--header-h)); overflow-y: auto;
-  -webkit-overflow-scrolling: touch; }
-.mobile-nav[hidden] { display: none; }
-.mobile-nav .search-mini { display: flex; width: 100%; margin-bottom: 12px; padding: 10px 14px; }
-.mobile-nav .search-mini input { width: 100%; font-size: 16px; }
-.mobile-nav-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.mobile-nav-links a { display: flex; align-items: center; min-height: 46px;
-  padding: 10px 14px; border-radius: 12px; font-weight: 500; color: var(--ink-soft);
-  border: 1px solid var(--glass-border); background: var(--glass-bg-soft); }
-.mobile-nav-links a:active { background: var(--grey-50); color: var(--charcoal); }
+/* ---- Drawers (menu: left, search: right) ------------------------------ */
+.ff-overlay { position: fixed; inset: 0; z-index: 468; background: rgba(0, 0, 0, .7);
+  opacity: 0; transition: opacity .5s cubic-bezier(.645, .045, .355, 1); }
+.ff-overlay.is-open { opacity: 1; }
+.ff-drawer { position: fixed; top: 0; bottom: 0; z-index: 469; width: 340px; max-width: 90vw;
+  display: flex; flex-direction: column; background: #fff; color: #222;
+  font-family: 'Figtree', sans-serif; font-weight: 300; font-size: 14px;
+  visibility: hidden;
+  transition: transform .5s cubic-bezier(.645, .045, .355, 1), visibility .5s cubic-bezier(.645, .045, .355, 1); }
+.ff-drawer--left { left: 0; transform: translateX(-100%); }
+.ff-drawer--right { right: 0; transform: translateX(100%); }
+.ff-drawer.is-open { visibility: visible; transform: none; }
+.ff-drawer__head { display: flex; align-items: center; justify-content: space-between;
+  min-height: 50px; padding-left: 20px; border-bottom: 1px solid rgba(129, 129, 129, .2); flex: none; }
+.ff-drawer__title { font-family: 'EB Garamond', serif; font-size: 16px; font-weight: 600;
+  text-transform: uppercase; color: #222; }
+.ff-drawer__close { flex: none; width: 50px; height: 50px; display: inline-flex;
+  align-items: center; justify-content: center; padding: 0; border: 0; background: none;
+  color: #000; cursor: pointer; }
+.ff-drawer__close svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.ff-drawer__body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; }
+
+.mb-menu, .mb-sub { list-style: none; margin: 0; padding: 0; }
+.mb-menu__search button { display: flex; align-items: center; gap: 6px; width: 100%;
+  min-height: 32px; padding: 5px 20px; border: 0; background: none; cursor: pointer;
+  font: inherit; color: #222; text-align: left; }
+.mb-menu__search svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.mb-card { position: relative; display: flex; align-items: center; height: 75px; margin: 8px;
+  border-radius: 15px; overflow: hidden;
+  background: linear-gradient(110deg, #4a1d5c, #a8738f) center / cover no-repeat; }
+.mb-card__link { flex: 1; align-self: stretch; display: flex; align-items: center;
+  padding: 5px 20px; color: #fff; font-size: 14px; font-weight: 300; }
+.mb-card__link.is-accent { color: #ec0101; }
+/* Red on the dark plum fallback is unreadable, so the accent card falls back
+   to a light blush instead. */
+.mb-card.is-accent { background: linear-gradient(110deg, #fbeff2, #ecd3dc) center / cover no-repeat; }
+/* White disc with a plus; the vertical bar turns flat for "minus". */
+.mb-card__toggle { position: relative; flex: none; width: 25px; height: 25px; margin-right: 12px;
+  padding: 0; border: 0; border-radius: 50px; background: #fff; cursor: pointer; }
+.mb-card__toggle::before, .mb-card__toggle::after { content: ""; position: absolute;
+  top: 50%; left: 50%; width: 10px; height: 1px; margin: -.5px 0 0 -5px; background: #000;
+  transition: transform .3s; }
+.mb-card__toggle::after { transform: rotate(90deg); }
+.mb-card__toggle[aria-expanded="true"]::after { transform: rotate(0deg); }
+.mb-sub a { display: flex; align-items: center; min-height: 32px; padding: 5px 20px 5px 30px;
+  color: #000; font-size: 14px; }
+.mb-sub .mb-sub__all { margin: 5px 20px; padding: 5px 20px 5px 10px; font-weight: 600;
+  border-top: 1px solid rgba(0, 0, 0, .15); }
+
+.ff-search__head { display: flex; align-items: center; gap: 4px; padding: 10px 0 10px 15px;
+  flex: none; }
+.ff-search__form { flex: 1; display: flex; align-items: center; height: 40px;
+  border: 1px solid #ddd; border-radius: 4px; padding: 0 6px 0 12px; }
+.ff-search__form input { flex: 1; min-width: 0; border: 0; outline: 0; background: none;
+  font: inherit; font-size: 13px; color: #222; }
+.ff-search__form button { display: inline-flex; padding: 4px; border: 0; background: none;
+  color: #222; cursor: pointer; }
+.ff-search__form svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.ff-search__head .ff-drawer__close { width: 40px; height: 40px; }
+.ff-search__head .ff-drawer__close svg { width: 16px; height: 16px; }
+.ff-search__body { padding: 10px 15px 20px; }
+.ff-search__label { margin: 0 0 8px; font-weight: 500; font-size: 13px; }
+.ff-search__quick { list-style: none; margin: 0 0 20px; padding: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.ff-search__quick a { font-size: 13px; color: #222; }
+.ff-search__quick a:hover, .ff-search__all:hover { color: #ad7936; }
+.ff-search__all { font-size: 12px; font-weight: 500; text-transform: uppercase; color: #222; }
+
+body.has-drawer { overflow: hidden; }
 
 .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;
   stroke-linecap: round; stroke-linejoin: round; }
@@ -334,7 +386,7 @@ img { max-width: 100%; display: block; }
 
 /* ---- Shop layout: filters + results ---------------------------------- */
 .shop-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; align-items: start; }
-.filters { position: sticky; top: calc(var(--header-h) + 10px); background: var(--glass-bg);
+.filters { position: sticky; top: 20px; background: var(--glass-bg);
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius); padding: 18px;
@@ -450,7 +502,7 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
    amount, and keep a gap so the two can't collide on a narrow screen. */
 .panel-body .row { gap: 12px; }
 .panel-body .row > :last-child { white-space: nowrap; }
-.summary { position: sticky; top: calc(var(--header-h) + 10px); }
+.summary { position: sticky; top: 20px; }
 .summary .row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0;
   color: var(--ink-soft); }
 .summary .row.total { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 14px;
@@ -497,21 +549,34 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
 
 /* ---- Footer ----------------------------------------------------------- */
-.site-footer { background: linear-gradient(180deg, rgba(23,23,23,.88), rgba(10,10,10,.92));
-  -webkit-backdrop-filter: var(--glass-blur-lg); backdrop-filter: var(--glass-blur-lg);
-  color: #d4d4d4; margin-top: 64px; border-top: 1px solid rgba(255,255,255,.08);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
-.site-footer .container { padding-top: 48px; padding-bottom: 32px; }
-.foot-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 30px; }
-.site-footer h5 { color: #fff; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: .06em;
-  text-transform: uppercase; margin: 0 0 12px; }
-.site-footer a { color: #a3a3a3; display: block; padding: 4px 0; }
-.site-footer a:hover { color: #fff; }
-.foot-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif;
-  font-size: 22px; color: #fff; font-weight: 700; margin-bottom: 12px; }
-.foot-brand img { width: 44px; height: 33px; object-fit: contain; }
-.foot-bottom { border-top: 1px solid #262626; margin-top: 30px; padding-top: 18px;
-  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: #737373; }
+.site-footer { margin-top: 64px; background: #313131; color: #fff;
+  font-family: 'Figtree', sans-serif; font-weight: 200; font-size: 16px; line-height: 24px; }
+.ftr-inner { max-width: 1410px; margin: 0 auto; padding: 30px 30px 20px; }
+.ftr-logo { display: block; width: max-content; margin: 0 auto 30px; }
+.ftr-logo img { display: block; width: auto; height: 90px; }
+.ftr-grid { display: grid; grid-template-columns: 25fr 20fr 20fr 35fr; gap: 30px;
+  max-width: 1350px; margin: 0 auto; }
+.ftr-heading { margin: 0 0 30px; font-family: inherit; font-size: 18px; font-weight: 500; line-height: 26px;
+  letter-spacing: 4px; text-transform: uppercase; color: #fff; }
+.ftr-col ul { list-style: none; margin: 0; padding: 0; }
+.ftr-col li { margin-bottom: 10px; }
+.ftr-col a { color: #fff; transition: opacity .2s; }
+.ftr-col a:hover { opacity: .7; }
+.ftr-col p { margin: 0 0 18px; }
+.ftr-social { display: flex; gap: 8px; margin-top: 4px; }
+.ftr-social a { display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; }
+.ftr-social svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
+.ftr-form { display: flex; align-items: center; gap: 8px; padding-bottom: 8px;
+  border-bottom: 1px solid #ddd; }
+.ftr-form input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; padding: 0;
+  color: #fff; font: inherit; font-size: 13px; }
+.ftr-form input::placeholder { color: #fff; opacity: 1; }
+.ftr-form button { display: inline-flex; padding: 0; border: 0; background: none; color: #fff; cursor: pointer; }
+.ftr-form svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
+.ftr-bottom { padding: 10px 15px; text-align: center; font-size: 14px; font-weight: 400;
+  line-height: 21px; color: #fff; background: #313131; }
 
 /* ---- App download prompt ---------------------------------------------- */
 /* Floating card offering the Android APK. store.js unhides it (and remembers a
@@ -548,25 +613,19 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 @keyframes promoOut { to { opacity: 0; transform: translateY(12px) scale(.97); } }
 
 /* ---- Responsive ------------------------------------------------------- */
-/* The full bar (brand + eight links + search + cart) measures ~1390px, so it
-   only fits at the very top end. Below that it steps down: compact, then a
-   drawer. */
-@media (max-width: 1360px) {
-  .brand img { width: 76px; height: 57px; }
-  .brand-text { font-size: 22px; letter-spacing: 2px; }
-  .main-nav { margin-left: 0; }
-  .main-nav a { padding: 8px 10px; font-size: 14px; }
-  .search-mini input { width: 110px; }
-  .site-header .bar { gap: 16px; }
-}
-
 @media (max-width: 1200px) {
   :root { --gutter: 24px; }
-  /* Nav and search move into the drawer — together they need ~1190px. */
-  .main-nav { display: none; }
-  .header-actions .search-mini { display: none; }
-  .nav-toggle { display: inline-flex; }
-  .mobile-nav:not([hidden]) { display: block; }
+}
+
+/* Below 1025px the link row gives way to the menu drawer. */
+@media (max-width: 1024px) {
+  :root { --header-h: 90px; }
+  .hdr-nav { display: none; }
+  .hdr-burger { display: inline-flex; }
+  .hdr-mid { min-height: 60px; margin: 0 15px; }
+  .hdr-logo img { height: 52px; }
+  .hdr-logo .brand-text { font-size: 22px; }
+  .ftr-grid { grid-template-columns: 1fr 1fr; }
 }
 
 /* With the filter rail taking 240px, four cards get too narrow to read on a
@@ -581,11 +640,9 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .gallery .main { max-width: 460px; }
   .cols { grid-template-columns: minmax(0, 1fr); }
   .summary { position: static; }
-  .foot-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 900px) {
-  :root { --header-h: 64px; }
   /* The 240px filter rail squeezes the cards past readable below this, so it
      becomes a collapsed disclosure above the results instead. */
   .shop-layout { grid-template-columns: minmax(0, 1fr); }
@@ -593,10 +650,14 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .filters > summary { display: flex; }
   .filters[open] > summary { margin-bottom: 6px; }
   .color-grid { grid-auto-rows: 44px; }
-  .site-header .bar { gap: 12px; }
-  .brand img { width: 60px; height: 45px; }
-  .brand-text { font-size: 18px; letter-spacing: 2px; }
-  .cart-link { padding: 9px 14px; }
+}
+
+@media (max-width: 767px) {
+  .ff-topbar { font-size: 14px; }
+  .ftr-inner { padding: 30px 15px 20px; }
+  .ftr-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .ftr-heading { margin-bottom: 16px; }
+  .ftr-col { padding-bottom: 14px; }
 }
 
 @media (max-width: 760px) {
@@ -607,15 +668,15 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .pdp h1 { font-size: 27px; }
   .cat-card { flex-basis: calc(50% - 6px); min-width: 0; }
   /* 16px is the threshold below which iOS Safari zooms the page on focus. */
-  .field-input, select.sort, .search-mini input, .qty input,
+  .field-input, select.sort, .qty input,
   input[type="text"], input[type="tel"], input[type="email"], textarea, select { font-size: 16px; }
   .qty button { width: 44px; height: 44px; }
   .qty input { height: 44px; }
 }
 
 @media (max-width: 560px) {
-  /* Two words no longer fit beside the cart and menu — stack the wordmark. */
-  .brand-text { white-space: normal; width: min-content; line-height: 1.1; }
+  /* The wordmark no longer fits between the icons; the mark carries the name. */
+  .hdr-logo .brand-text { display: none; }
   .cart-item { grid-template-columns: 72px minmax(0, 1fr);
     grid-template-areas: "thumb info"
                          "thumb total"
@@ -638,37 +699,28 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
 @media (max-width: 420px) {
   :root { --gutter: 16px; }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .foot-grid { grid-template-columns: minmax(0, 1fr); }
   .cat-strip { gap: 10px; }
   .product-body { padding: 12px 12px 14px; }
   .price { font-size: 15px; }
-}
-
-/* Very small phones (≤360px) — keep the brand from crowding out the cart. */
-@media (max-width: 360px) {
-  .brand-text { font-size: 15px; letter-spacing: 1px; }
-  .brand img { width: 48px; height: 36px; }
-  .cart-link span:not(.cart-badge) { display: none; }
 }
 
 /* ---- Graceful degradation for the liquid-glass layer ------------------ */
 /* Browsers without backdrop-filter get solid surfaces so nothing turns to
    an unreadable transparent wash. */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .site-header, .search-mini, .cat-card, .product-card, .filters, .panel,
+  .cat-card, .product-card, .filters, .panel,
   .gallery .main, .pagination a, .pagination span, .flash, .btn-ghost,
-  select.sort, .field-input, .nav-toggle, .mobile-nav,
-  .mobile-nav-links a, .app-promo { background: var(--card); }
+  select.sort, .field-input, .app-promo { background: var(--card); }
   .chip, .cod-banner { background: var(--grey-50); }
 }
 
 /* Respect users who ask the OS to reduce transparency. */
 @media (prefers-reduced-transparency: reduce) {
   body::before { background: linear-gradient(180deg, #ffffff, var(--bg)); }
-  .site-header, .flash, .mobile-nav { background: #fff; }
-  .search-mini, .cat-card, .product-card, .filters, .panel, .gallery .main,
+  .flash { background: #fff; }
+  .cat-card, .product-card, .filters, .panel, .gallery .main,
   .pagination a, .pagination span, .btn-ghost, select.sort, .field-input,
-  .nav-toggle, .mobile-nav, .mobile-nav-links a, .app-promo { background: var(--card); }
+  .app-promo { background: var(--card); }
   .chip, .cod-banner { background: var(--grey-50); }
 }
 

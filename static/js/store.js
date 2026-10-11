@@ -20,24 +20,81 @@
     }, 3500);
   }
 
-  // --- Mobile nav drawer ------------------------------------------------
-  var navToggle = document.getElementById('nav-toggle');
-  var mobileNav = document.getElementById('mobile-nav');
-  if (navToggle && mobileNav) {
-    var setNav = function (open) {
-      mobileNav.hidden = !open;
-      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    };
-    navToggle.addEventListener('click', function () {
-      setNav(mobileNav.hidden);
+  // --- Drawers: menu (left) and search (right) ---------------------------
+  // Any [data-drawer-open="id"] opens that drawer; the overlay, close buttons
+  // and Escape close it. Opening one drawer swaps out whichever is open.
+  var overlay = document.querySelector('.ff-overlay');
+  var openDrawer = null;
+  var opener = null;
+  var DRAWER_MS = 500;   // matches the CSS slide transition
+
+  function setOpeners(id, open) {
+    document.querySelectorAll('[data-drawer-open="' + id + '"]').forEach(function (b) {
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
-    // The drawer is CSS-hidden above 1200px; keep the button's state honest so
-    // it never reports "expanded" while pointing at an invisible panel.
-    var wide = window.matchMedia('(min-width: 1201px)');
-    var syncNav = function () { if (wide.matches) setNav(false); };
-    wide.addEventListener('change', syncNav);
+  }
+
+  function closeDrawer(restoreFocus) {
+    if (!openDrawer) return;
+    var d = openDrawer;
+    openDrawer = null;
+    d.classList.remove('is-open');
+    d.setAttribute('aria-hidden', 'true');
+    d.inert = true;
+    setOpeners(d.id, false);
+    overlay.classList.remove('is-open');
+    document.body.classList.remove('has-drawer');
+    setTimeout(function () { if (!openDrawer) overlay.hidden = true; }, DRAWER_MS);
+    if (restoreFocus && opener) opener.focus();
+  }
+
+  function showDrawer(d, trigger) {
+    if (openDrawer === d) return;
+    // Switching from the menu to search keeps the original trigger for focus.
+    if (!openDrawer) opener = trigger;
+    closeDrawer(false);
+    openDrawer = d;
+    overlay.hidden = false;
+    d.inert = false;
+    d.setAttribute('aria-hidden', 'false');
+    setOpeners(d.id, true);
+    document.body.classList.add('has-drawer');
+    // Let the un-hidden overlay paint once so its fade-in runs.
+    requestAnimationFrame(function () {
+      overlay.classList.add('is-open');
+      d.classList.add('is-open');
+    });
+    var field = d.querySelector('input[type="search"]');
+    setTimeout(function () { (field || d.querySelector('.ff-drawer__close')).focus(); }, 50);
+  }
+
+  if (overlay) {
+    document.addEventListener('click', function (e) {
+      var openBtn = e.target.closest('[data-drawer-open]');
+      if (openBtn) {
+        var d = document.getElementById(openBtn.getAttribute('data-drawer-open'));
+        if (d) { e.preventDefault(); showDrawer(d, openBtn); }
+        return;
+      }
+      if (e.target.closest('[data-drawer-close]')) closeDrawer(true);
+    });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !mobileNav.hidden) { setNav(false); navToggle.focus(); }
+      if (e.key === 'Escape' && openDrawer) closeDrawer(true);
+    });
+    // The menu drawer only exists below 1025px; don't leave it open (and the
+    // page scroll-locked) when the window grows past that.
+    var wide = window.matchMedia('(min-width: 1025px)');
+    wide.addEventListener('change', function () {
+      if (wide.matches && openDrawer && openDrawer.id === 'menu-drawer') closeDrawer(false);
+    });
+
+    // Drawer cards: the "+" disc expands that card's link list.
+    document.querySelectorAll('.mb-card__toggle').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var open = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        document.getElementById(btn.getAttribute('aria-controls')).hidden = !open;
+      });
     });
   }
 

@@ -1,7 +1,10 @@
 """Template context shared across every storefront page."""
 
+from django.utils.functional import SimpleLazyObject
+
 from .cart import Cart
 from .constants import ANDROID_APP_UA_MARKER, ANDROID_APP_VERSION
+from .menu import main_menu
 from .models import Category, StoreSetting
 
 
@@ -18,6 +21,8 @@ def storefront(request):
     return {
         'store_settings': StoreSetting.load(),
         'nav_categories': nav_categories,
+        # Lazy, so admin and other pages that never draw the header skip it.
+        'main_menu': SimpleLazyObject(main_menu),
         'cart_count': len(cart),
         'cart_subtotal': cart.subtotal,
         'in_mobile_app': in_app,

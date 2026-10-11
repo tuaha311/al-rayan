@@ -1,49 +1,125 @@
 {% load static %}
+<div class="ff-topbar">
+  <a href="{% url 'store:product_list' %}">Cash on Delivery all over Pakistan</a>
+</div>
+
 <header class="site-header">
-  <div class="header-inner">
-    <div class="bar">
-      <a href="{% url 'store:home' %}" class="brand">
-        <img src="{% static 'images/logo-transparent.png' %}" alt="{{ store_settings.store_name }}"/>
-        <span class="brand-text">Floral Finesse</span>
+  <div class="hdr-mid">
+    <div class="hdr-col hdr-col--left">
+      {# Below 1025px the link row is hidden and the drawer takes over. #}
+      <button type="button" class="hdr-burger" data-drawer-open="menu-drawer"
+              aria-label="Open menu" aria-controls="menu-drawer" aria-expanded="false">
+        <svg width="30" height="16" viewBox="0 0 30 16" fill="currentColor" aria-hidden="true">
+          <rect width="20" height="1.5"/><rect y="7" width="20" height="1.5"/><rect y="14" width="20" height="1.5"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="hdr-col hdr-col--center">
+      <a href="{% url 'store:home' %}" class="hdr-logo" aria-label="{{ store_settings.store_name }} home">
+        <img src="{% static 'images/logo-transparent.png' %}" alt="" width="509" height="383"/>
+        <span class="brand-text">{{ store_settings.store_name }}</span>
       </a>
+    </div>
 
-      <nav class="main-nav">
-        {% include "store/partials/nav_links.html" %}
-      </nav>
-
-      <div class="header-actions">
-        <form class="search-mini" action="{% url 'store:product_list' %}" method="get" role="search">
-          <button type="submit" aria-label="Search">
-            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          </button>
-          <input type="text" name="q" placeholder="Search fabrics…" value="{{ request.GET.q }}"/>
-        </form>
-
-        <a href="{% url 'store:cart' %}" class="cart-link">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          <span>Cart</span>
-          {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
-        </a>
-
-        {# Shown by CSS below 900px, where the link bar no longer fits. #}
-        <button type="button" class="nav-toggle" id="nav-toggle"
-                aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">
-          <svg class="icon icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-          <svg class="icon icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-        </button>
-      </div>
+    <div class="hdr-col hdr-col--right">
+      <button type="button" class="hdr-icon" data-drawer-open="search-drawer"
+              aria-label="Search" aria-controls="search-drawer" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m21 21-5.2-5.2"/></svg>
+      </button>
+      <a href="{% url 'store:cart' %}" class="hdr-icon hdr-cart" aria-label="Cart, {{ cart_count }} item{{ cart_count|pluralize }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l-1 14H5L4 7Z"/><path d="M8.5 10V6a3.5 3.5 0 0 1 7 0v4"/></svg>
+        <span class="hdr-count">{{ cart_count }}</span>
+      </a>
     </div>
   </div>
 
-  <div class="mobile-nav" id="mobile-nav" hidden>
-    <form class="search-mini" action="{% url 'store:product_list' %}" method="get" role="search">
-      <button type="submit" aria-label="Search">
-        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      </button>
-      <input type="text" name="q" placeholder="Search fabrics…" value="{{ request.GET.q }}"/>
-    </form>
-    <nav class="mobile-nav-links">
-      {% include "store/partials/nav_links.html" %}
-    </nav>
-  </div>
+  <nav class="hdr-nav" aria-label="Main">
+    <ul class="hdr-nav__ul">
+      {% for item in main_menu %}
+        <li class="hdr-nav__item{% if item.children %} has-sub{% endif %}">
+          <a href="{{ item.url }}" class="hdr-nav__link{% if item.accent %} is-accent{% endif %}">{{ item.label }}</a>
+          {% if item.children %}
+            <div class="hdr-sub">
+              <div class="hdr-sub__links">
+                <a href="{{ item.url }}" class="hdr-sub__heading">{{ item.label }}</a>
+                {% for child in item.children %}
+                  <a href="{{ child.url }}">{{ child.label }}</a>
+                {% endfor %}
+                <a href="{{ item.url }}" class="hdr-sub__all">View All</a>
+              </div>
+              <a href="{{ item.url }}" class="hdr-sub__banner"{% if item.image %} style="background-image:url('{{ item.image }}')"{% endif %}>
+                <span class="hdr-sub__banner-title">{{ item.label }}</span>
+                <span class="hdr-sub__banner-cta">Shop Collection</span>
+              </a>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
 </header>
+
+<div class="ff-overlay" data-drawer-close hidden></div>
+
+<aside class="ff-drawer ff-drawer--left" id="menu-drawer" aria-label="Menu" aria-hidden="true" inert>
+  <div class="ff-drawer__head">
+    <span class="ff-drawer__title">Menu</span>
+    <button type="button" class="ff-drawer__close" data-drawer-close aria-label="Close menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+    </button>
+  </div>
+  <div class="ff-drawer__body">
+    <ul class="mb-menu">
+      <li class="mb-menu__search">
+        <button type="button" data-drawer-open="search-drawer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m21 21-5.2-5.2"/></svg>
+          Search
+        </button>
+      </li>
+      {% for item in main_menu %}
+        <li class="mb-menu__item">
+          {# A left-side scrim keeps white labels legible on any photo; the red accent label skips it. #}
+          <div class="mb-card{% if item.accent %} is-accent{% endif %}"{% if item.image %} style="background-image:{% if not item.accent %}linear-gradient(90deg,rgba(0,0,0,.45),rgba(0,0,0,.05) 70%),{% endif %}url('{{ item.image }}')"{% endif %}>
+            <a href="{{ item.url }}" class="mb-card__link{% if item.accent %} is-accent{% endif %}">{{ item.label }}</a>
+            {% if item.children %}
+              <button type="button" class="mb-card__toggle" aria-expanded="false"
+                      aria-controls="mb-sub-{{ forloop.counter }}" aria-label="Show {{ item.label }} links"></button>
+            {% endif %}
+          </div>
+          {% if item.children %}
+            <ul class="mb-sub" id="mb-sub-{{ forloop.counter }}" hidden>
+              {% for child in item.children %}
+                <li><a href="{{ child.url }}">{{ child.label }}</a></li>
+              {% endfor %}
+              <li><a href="{{ item.url }}" class="mb-sub__all">View All</a></li>
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</aside>
+
+<aside class="ff-drawer ff-drawer--right" id="search-drawer" aria-label="Search" aria-hidden="true" inert>
+  <div class="ff-search__head">
+    <form class="ff-search__form" action="{% url 'store:product_list' %}" method="get" role="search">
+      <input type="search" name="q" placeholder="Search" value="{{ request.GET.q }}" aria-label="Search products"/>
+      <button type="submit" aria-label="Submit search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m21 21-5.2-5.2"/></svg>
+      </button>
+    </form>
+    <button type="button" class="ff-drawer__close" data-drawer-close aria-label="Close search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+    </button>
+  </div>
+  <div class="ff-drawer__body ff-search__body">
+    <p class="ff-search__label">Quick search:</p>
+    <ul class="ff-search__quick">
+      {% for item in main_menu %}{% if not forloop.first %}
+        <li><a href="{{ item.url }}">{{ item.label }}</a></li>
+      {% endif %}{% endfor %}
+    </ul>
+    <a href="{% url 'store:product_list' %}" class="ff-search__all">View all &rarr;</a>
+  </div>
+</aside>

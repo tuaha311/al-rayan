@@ -1,48 +1,68 @@
 {% load static %}
 <footer class="site-footer">
-  <div class="container">
-    <div class="foot-grid">
-      <div>
-        <div class="foot-brand">
-          <img src="{% static 'images/logo-transparent.png' %}" alt=""/> {{ store_settings.store_name }}
-        </div>
-        <p class="muted" style="color:#a8a29e;max-width:34ch">
-          Premium Wash & wear, Cotton, Lawn Cotton, Latha, Boski,  Karandi and embroidered Gents suits in whole-sale price. Choose your color and pay cash on delivery anywhere in Pakistan.
-        </p>
-      </div>
-      <div>
-        <h5>Shop</h5>
-        <a href="{% url 'store:product_list' %}">All Fabric</a>
-        {% for cat in nav_categories %}
-          {% for child in cat.children.all %}
-            {% if child.is_active %}
-              <a href="{% url 'store:product_list' %}?category={{ child.slug }}">{{ child.name }}</a>
-            {% endif %}
+  <div class="ftr-inner">
+    <a href="{% url 'store:home' %}" class="ftr-logo" aria-label="{{ store_settings.store_name }} home">
+      <img src="{% static 'images/logo-transparent.png' %}" alt="" width="509" height="383"/>
+    </a>
+
+    <div class="ftr-grid">
+      <div class="ftr-col">
+        <h3 class="ftr-heading">Shop</h3>
+        <ul>
+          {% for item in main_menu %}
+            <li><a href="{{ item.url }}">{{ item.label }}</a></li>
           {% endfor %}
-        {% endfor %}
-        <a href="{% url 'store:product_list' %}?on_sale=1">On Sale</a>
+        </ul>
       </div>
-      <div>
-        <h5>Help</h5>
-        <a href="{% url 'store:cart' %}">Your Cart</a>
-        <a href="#">Delivery &amp; Returns</a>
-        <a href="#">Size &amp; Length Guide</a>
-        <a href="#">Track Order</a>
-        {# Permanent home for the app once the floating prompt is dismissed. #}
-        {% if not in_mobile_app %}
-          <a href="{% url 'store:download_app' %}" download>Android App (APK)</a>
-        {% endif %}
+
+      <div class="ftr-col">
+        <h3 class="ftr-heading">Information</h3>
+        <ul>
+          <li><a href="{% url 'store:cart' %}">Your Cart</a></li>
+          <li><a href="#">Delivery &amp; Returns</a></li>
+          <li><a href="#">Size &amp; Length Guide</a></li>
+          <li><a href="#">Track Order</a></li>
+          {% if not in_mobile_app %}
+            {# Permanent home for the app once the floating prompt is dismissed. #}
+            <li><a href="{% url 'store:download_app' %}" download>Android App (APK)</a></li>
+          {% endif %}
+        </ul>
       </div>
-      <div>
-        <h5>Contact</h5>
-        {% if store_settings.contact_phone %}<a href="tel:{{ store_settings.contact_phone }}">{{ store_settings.contact_phone }}</a>{% endif %}
-        {% if store_settings.contact_email %}<a href="mailto:{{ store_settings.contact_email }}">{{ store_settings.contact_email }}</a>{% endif %}
-        <p class="muted" style="color:#a8a29e;margin-top:10px">Cash on Delivery available all over Pakistan.</p>
+
+      <div class="ftr-col">
+        <h3 class="ftr-heading">Customer Care</h3>
+        <ul>
+          {% if store_settings.contact_phone %}<li><a href="tel:{{ store_settings.contact_phone }}">{{ store_settings.contact_phone }}</a></li>{% endif %}
+          {% if store_settings.contact_email %}<li><a href="mailto:{{ store_settings.contact_email }}">{{ store_settings.contact_email }}</a></li>{% endif %}
+          <li><span>Cash on Delivery all over Pakistan</span></li>
+        </ul>
+        <div class="ftr-social">
+          <a href="https://www.instagram.com/floral.finesse/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          {# wa.me needs the international form, so only link a +92… number. #}
+          {% if store_settings.contact_phone|slice:":1" == "+" %}
+            <a href="https://wa.me/{{ store_settings.contact_phone|cut:'+'|cut:' '|cut:'-' }}" target="_blank" rel="noopener" aria-label="WhatsApp">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4l-4.5 1.1Z"/><path d="M9 8.5c0 3.3 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a5 5 0 0 1-2.5-2.6l.8-1-1-2-1.8.8Z" fill="currentColor" stroke="none"/></svg>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="ftr-col ftr-col--wide">
+        <h3 class="ftr-heading">Find Your Piece</h3>
+        <p>Search hand-painted, embroidered and embellished couture by name, fabric or colour.</p>
+        <form class="ftr-form" action="{% url 'store:product_list' %}" method="get" role="search">
+          <input type="search" name="q" placeholder="Search the collection" aria-label="Search the collection"/>
+          <button type="submit" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </button>
+        </form>
       </div>
     </div>
-    <div class="foot-bottom">
-      <span>© {% now "Y" %} {{ store_settings.store_name }}. All rights reserved.</span>
-      <span>Prices in PKR · Cash on Delivery</span>
-    </div>
+  </div>
+
+  <div class="ftr-bottom">
+    Copyright &copy; {% now "Y" %} {{ store_settings.store_name }} - All rights reserved.
   </div>
 </footer>
