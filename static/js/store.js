@@ -120,7 +120,7 @@
     if (controls && slides.length > 1) {
       var dots = hero.querySelectorAll('.hs-dot');
       var pauseBtn = hero.querySelector('.hs-pause');
-      var INTERVAL = 6000;
+      var INTERVAL = 8000;
       var current = 0;
       var timer = null;
       var playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
