@@ -494,6 +494,27 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   border: 1px solid var(--glass-border); background: var(--glass-bg);
   box-shadow: var(--glass-highlight), var(--shadow-sm); }
 .gallery .main img, .gallery .main .thumb-fallback { width: 100%; height: 100%; object-fit: cover; }
+/* Several shots: a thumbnail rail beside the main image. The rail is sized to
+   nothing (height 0, min-height 100%) so the main image alone sets the row
+   height and a long rail scrolls instead of stretching the gallery. */
+.gallery.has-thumbs { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; }
+.gallery.has-thumbs .main { grid-column: 2; grid-row: 1; position: relative; touch-action: pan-y; }
+.gallery-thumbs { grid-column: 1; grid-row: 1; height: 0; min-height: 100%;
+  display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-width: thin; }
+.gallery-thumb { flex: none; display: block; aspect-ratio: 3/4; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--glass-border); opacity: .6; transition: opacity .15s, border-color .15s; }
+.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery-thumb:hover, .gallery-thumb.is-active { opacity: 1; }
+.gallery-thumb.is-active { border-color: var(--charcoal); box-shadow: inset 0 0 0 1px var(--charcoal); }
+.gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px;
+  border-radius: 50%; border: 0; background: rgba(255,255,255,.85); color: var(--charcoal);
+  font-size: 26px; line-height: 1; cursor: pointer; box-shadow: var(--shadow-sm);
+  display: none; align-items: center; justify-content: center; padding-bottom: 3px; }
+.gallery-nav.prev { left: 12px; }
+.gallery-nav.next { right: 12px; }
+.gallery.is-live .gallery-nav { display: inline-flex; }
+.gallery-count { position: absolute; right: 12px; bottom: 12px; padding: 4px 10px; border-radius: 999px;
+  background: rgba(38,38,38,.7); color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .04em; }
 .pdp h1 { font-size: 34px; margin-top: 6px; }
 .pdp .meta { color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-size: 12px; }
 .pdp .price-row { font-size: 22px; }
@@ -674,6 +695,12 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pdp { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .gallery .main { max-width: 460px; }
+  /* Stacked layout: the thumbnails become a swipeable row under the photo. */
+  .gallery.has-thumbs { grid-template-columns: minmax(0, 1fr); max-width: 460px; }
+  .gallery.has-thumbs .main { grid-column: 1; }
+  .gallery-thumbs { grid-column: 1; grid-row: 2; height: auto; min-height: 0;
+    flex-direction: row; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
+  .gallery-thumb { width: 72px; }
   .cols { grid-template-columns: minmax(0, 1fr); }
   .summary { position: static; }
 }

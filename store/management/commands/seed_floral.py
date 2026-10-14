@@ -126,6 +126,11 @@ CATEGORIES = [
 # suit/piece; digital printed unstitched fabric is sold by length
 # (by_meters=True).
 #
+# An optional ``gallery`` lists extra shots shown after the main photo on the
+# product page — a filename, or (filename, colour) to tie the shot to that
+# colour variant. With no alternate angles in the stock set, these borrow
+# photos of similar pieces from the same category.
+#
 # Prices follow the bands a Pakistani luxury atelier charges in PKR (prêt
 # ~15k–60k, luxury/semi-formal ~45k–250k, formals ~165k–400k, bridal
 # ~450k–900k, shawls ~95k–220k).
@@ -134,6 +139,7 @@ PRODUCTS = [
     dict(sku='FF-HP-001', name='Gul-e-Rana Hand Painted Silk Suit', category='hand-painted',
          fabric='Pure Silk', season='Festive', price=98000, featured=True,
          colors=['Blush Pink', 'Ivory'], image='pexels-35902078.jpg',
+         gallery=['pexels-36634896.jpg', 'pexels-36104913.jpg'],
          pitch='Rose-garden motifs hand painted across the shirt and dupatta.'),
     dict(sku='FF-HP-002', name='Mor Bagh Hand Painted Organza Suit', category='hand-painted',
          fabric='Organza', season='Festive', price=128000, featured=True,
@@ -188,6 +194,7 @@ PRODUCTS = [
     dict(sku='FF-3D-001', name='Gulposh 3D Floral Organza Suit', category='3d-embellished',
          fabric='Organza', season='Festive', price=185000, featured=True,
          colors=['Lilac', 'Ivory'], image='pexels-3460676.jpg',
+         gallery=['pexels-6018532.jpg', 'pexels-5721528.jpg'],
          pitch='Hand-sculpted 3D blooms cascading over sheer organza.'),
     dict(sku='FF-3D-002', name='Titli 3D Embellished Chiffon Suit', category='3d-embellished',
          fabric='Chiffon', season='Festive', price=165000, featured=False,
@@ -231,6 +238,7 @@ PRODUCTS = [
     dict(sku='FF-FM-001', name='Mehtab Embellished Velvet Lehenga', category='formals',
          fabric='Velvet', season='Winter', price=385000, featured=True,
          colors=['Black', 'Maroon'], image='pexels-37962746.jpg',
+         gallery=[('pexels-39299452.jpg', 'Black'), ('pexels-28390542.jpg', 'Maroon')],
          pitch='Midnight velvet lehenga with a kamdani-worked net dupatta.'),
     dict(sku='FF-FM-002', name='Zeba Gota Raw Silk Anarkali', category='formals',
          fabric='Raw Silk', season='Festive', price=265000, featured=False,
@@ -255,36 +263,46 @@ PRODUCTS = [
     dict(sku='FF-FM-007', name='Gulabi Shaam Lehenga', category='formals',
          fabric='Organza', season='Festive', price=225000, featured=False,
          colors=['Fuchsia', 'Blush Pink'], image='pexels-37628608.jpg',
+         gallery=['pexels-28405815.jpg', 'pexels-39299504.jpg'],
          pitch='Mirror-worked pink lehenga with a sheer organza dupatta.'),
     # --- Bridal Couture ---------------------------------------------------
     dict(sku='FF-BR-001', name='Laal Jora Bridal Lehenga', category='bridal-couture',
          fabric='Velvet', season='Festive', price=895000, featured=True,
          colors=['Maroon', 'Red'], image='pexels-12791932.jpg',
+         gallery=[('pexels-13124449.jpg', 'Red'), ('pexels-30167011.jpg', 'Maroon'),
+                  'pexels-8497817.jpg', 'pexels-16125951.jpg'],
          pitch='A heritage baraat lehenga in zardozi, dabka and naqshi.'),
     dict(sku='FF-BR-002', name='Mehr-un-Nisa Bridal Gharara', category='bridal-couture',
          fabric='Raw Silk', season='Festive', price=760000, featured=False,
          colors=['Maroon'], image='pexels-30167011.jpg',
+         gallery=['pexels-12791932.jpg', 'pexels-8497817.jpg'],
          pitch='Traditional gharara with a kamdani dupatta and gota-trimmed kurti.'),
     dict(sku='FF-BR-003', name='Noor-e-Sahar Walima Lehenga', category='bridal-couture',
          fabric='Organza', season='Festive', price=640000, featured=False,
          colors=['Ivory', 'Champagne'], image='pexels-16125951.jpg',
+         gallery=['pexels-8497817.jpg', 'pexels-35591476.jpg', 'pexels-7578483.jpg'],
          pitch='Ivory and antique-gold walima lehenga with pearl-strewn borders.'),
     dict(sku='FF-BR-004', name='Mehndi Rang Lehenga', category='bridal-couture',
          fabric='Raw Silk', season='Festive', price=465000, featured=False,
          colors=['Mustard', 'Fuchsia'], image='pexels-35591476.jpg',
+         gallery=[('pexels-19345934.jpg', 'Mustard'), ('pexels-7578483.jpg', 'Fuchsia')],
          pitch='Turmeric-yellow mehndi lehenga with a contrast pink dupatta.'),
     dict(sku='FF-BR-005', name='Shehzadi Bridal Lehenga', category='bridal-couture',
          fabric='Velvet', season='Winter', price=820000, featured=False,
          colors=['Red'], image='pexels-13124449.jpg',
+         gallery=['pexels-12791932.jpg', 'pexels-30167011.jpg', 'pexels-8497817.jpg'],
          pitch='Classic red bridal with a fully worked kalidar skirt.'),
     dict(sku='FF-BR-006', name='Gulnaar Baraat Lehenga', category='bridal-couture',
          fabric='Raw Silk', season='Festive', price=700000, featured=False,
          colors=['Fuchsia', 'Maroon'], image='pexels-7578483.jpg',
+         gallery=[('pexels-37628608.jpg', 'Fuchsia'), ('pexels-12791932.jpg', 'Maroon'),
+                  'pexels-13124449.jpg', 'pexels-8497817.jpg'],
          pitch='Magenta baraat lehenga with jamawar-inspired gold work.'),
     # --- Shawls -----------------------------------------------------------
     dict(sku='FF-SH-001', name='Chinar Hand Painted Pashmina Shawl', category='shawls',
          fabric='Pashmina', season='Winter', price=165000, featured=True,
          colors=['Red', 'Ivory'], image='pexels-4972908.jpg',
+         gallery=['pexels-4972976.jpg', 'pexels-13103385.jpg'],
          pitch='Autumn chinar leaves hand painted along the pallu.'),
     dict(sku='FF-SH-002', name='Kashida Embroidered Pashmina Shawl', category='shawls',
          fabric='Pashmina', season='Winter', price=220000, featured=False,
@@ -397,7 +415,7 @@ class Command(BaseCommand):
         return out
 
     def _seed_products(self):
-        count = variants = 0
+        count = variants = photos = 0
         for data in PRODUCTS:
             by_meters = data.get('by_meters', False)
             fabric = data['fabric']
@@ -429,12 +447,12 @@ class Command(BaseCommand):
                 },
             )
             count += 1
-            self._attach_photo(product, data['image'])
             # Couture is made in small runs; printed fabric carries more stock.
             base_stock = 20 if by_meters else 6
+            by_color = {}
             for idx, color_name in enumerate(data['colors']):
                 color = self.colors[color_name]
-                ProductVariant.objects.update_or_create(
+                by_color[color_name], _ = ProductVariant.objects.update_or_create(
                     product=product, color=color,
                     defaults={
                         'sku': f"{product.sku}-{color.slug[:3].upper()}",
@@ -444,7 +462,10 @@ class Command(BaseCommand):
                     },
                 )
                 variants += 1
-        self.stdout.write(f'  Products: {count}  (variants: {variants})')
+            photos += self._attach_photos(
+                product, data['image'], data.get('gallery', ()), by_color)
+        self.stdout.write(
+            f'  Products: {count}  (variants: {variants}, photos: {photos})')
 
     def _store_media(self, filename, folder):
         """Copy a bundled photo into media storage once; return its stored name.
@@ -458,16 +479,31 @@ class Command(BaseCommand):
                 name = default_storage.save(name, File(fh))
         return name
 
-    def _attach_photo(self, product, filename):
-        name = self._store_media(filename, f'products/{product.slug}')
+    def _attach_photos(self, product, main, gallery, by_color):
+        """Attach the main photo plus any gallery shots; return how many."""
+        folder = f'products/{product.slug}'
+        shots = [(main, None)] + [
+            (s, None) if isinstance(s, str) else s for s in gallery
+        ]
+        names = []
+        for order, (filename, color_name) in enumerate(shots):
+            name = self._store_media(filename, folder)
+            names.append(name)
+            ProductImage.objects.update_or_create(
+                product=product, image=name,
+                defaults={
+                    'alt_text': product.name if order == 0
+                    else f'{product.name} — view {order + 1}',
+                    'is_primary': order == 0,
+                    'sort_order': order,
+                    'variant': by_color.get(color_name),
+                },
+            )
         # Drop photos an earlier version of this seed attached, keep any added
         # by hand in the admin.
-        product.images.filter(image__startswith=f'products/{product.slug}/pexels-') \
-            .exclude(image=name).delete()
-        ProductImage.objects.update_or_create(
-            product=product, image=name,
-            defaults={'alt_text': product.name, 'is_primary': True, 'sort_order': 0},
-        )
+        product.images.filter(image__startswith=f'{folder}/pexels-') \
+            .exclude(image__in=names).delete()
+        return len(names)
 
     def _seed_discounts(self):
         now = timezone.now()

@@ -297,6 +297,75 @@
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
+  // --- Product detail: image gallery ------------------------------------
+  // Thumbnails swap the main photo; arrows, arrow keys and a swipe step
+  // through every shot. Picking a colour jumps to that colour's first photo.
+  var gallery = document.getElementById('gallery');
+  var thumbs = gallery ? gallery.querySelectorAll('.gallery-thumb') : [];
+  if (thumbs.length > 1) {
+    var mainImg = document.getElementById('gallery-main-img');
+    var indexEl = document.getElementById('gallery-index');
+    var shown = 0;
+
+    var show = function (i) {
+      i = (i + thumbs.length) % thumbs.length;
+      var t = thumbs[i];
+      thumbs[shown].classList.remove('is-active');
+      thumbs[shown].removeAttribute('aria-current');
+      t.classList.add('is-active');
+      t.setAttribute('aria-current', 'true');
+      mainImg.src = t.getAttribute('data-full');
+      mainImg.alt = t.getAttribute('data-alt');
+      if (indexEl) indexEl.textContent = i + 1;
+      // Keep the active thumbnail in view without scrolling the page.
+      var rail = t.parentNode;
+      if (rail.scrollHeight > rail.clientHeight) {
+        rail.scrollTop = t.offsetTop - rail.offsetTop - (rail.clientHeight - t.offsetHeight) / 2;
+      }
+      if (rail.scrollWidth > rail.clientWidth) {
+        rail.scrollLeft = t.offsetLeft - rail.offsetLeft - (rail.clientWidth - t.offsetWidth) / 2;
+      }
+      shown = i;
+    };
+
+    gallery.classList.add('is-live');
+    thumbs.forEach(function (t, i) {
+      t.addEventListener('click', function (e) { e.preventDefault(); show(i); });
+    });
+    gallery.querySelectorAll('[data-gallery-step]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        show(shown + parseInt(btn.getAttribute('data-gallery-step'), 10));
+      });
+    });
+    gallery.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') show(shown - 1);
+      else if (e.key === 'ArrowRight') show(shown + 1);
+    });
+
+    var galleryMain = document.getElementById('gallery-main');
+    var gx = null, gy = 0;
+    galleryMain.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse') { gx = e.clientX; gy = e.clientY; }
+    });
+    galleryMain.addEventListener('pointercancel', function () { gx = null; });
+    galleryMain.addEventListener('pointerup', function (e) {
+      if (gx === null) return;
+      var dx = e.clientX - gx, dy = e.clientY - gy;
+      gx = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(shown + (dx < 0 ? 1 : -1));
+    });
+
+    var addForm = document.getElementById('add-form');
+    if (addForm) {
+      addForm.addEventListener('change', function (e) {
+        if (e.target.name !== 'variant_id') return;
+        for (var i = 0; i < thumbs.length; i++) {
+          if (thumbs[i].getAttribute('data-variant') === e.target.value) { show(i); break; }
+        }
+      });
+    }
+  }
+
   // --- Product detail: live price preview -------------------------------
   var priceEl = document.getElementById('live-price');
   var dataEl = document.getElementById('price-data');

@@ -15,10 +15,17 @@
 
     <div class="pdp">
       <!-- Gallery -->
-      <div class="gallery">
+      <div class="gallery{% if images|length > 1 %} has-thumbs{% endif %}" id="gallery">
         <div class="main" id="gallery-main">
-          {% if product.primary_image %}
-            <img src="{{ product.primary_image.url }}" alt="{{ product.name }}"/>
+          {% if images %}
+            {% with main=images.0 %}
+              <img src="{{ main.image.url }}" alt="{{ main.alt_text|default:product.name }}" id="gallery-main-img"/>
+            {% endwith %}
+            {% if images|length > 1 %}
+              <button type="button" class="gallery-nav prev" data-gallery-step="-1" aria-label="Previous image">‹</button>
+              <button type="button" class="gallery-nav next" data-gallery-step="1" aria-label="Next image">›</button>
+              <span class="gallery-count" aria-hidden="true"><span id="gallery-index">1</span> / {{ images|length }}</span>
+            {% endif %}
           {% else %}
             <div class="thumb-fallback">
               {% for v in variants|slice:":9" %}
@@ -30,6 +37,21 @@
             <div class="thumb-logo"><span>{{ product.fabric.name|default:product.name }}</span></div>
           {% endif %}
         </div>
+
+        {% if images|length > 1 %}
+        <!-- Every uploaded shot; without JS each opens the full-size photo. -->
+        <div class="gallery-thumbs" aria-label="Product images">
+          {% for img in images %}
+            <a href="{{ img.image.url }}" class="gallery-thumb{% if forloop.first %} is-active{% endif %}"
+               data-full="{{ img.image.url }}" data-alt="{{ img.alt_text|default:product.name }}"
+               {% if img.variant_id %}data-variant="{{ img.variant_id }}"{% endif %}
+               aria-label="Show image {{ forloop.counter }} of {{ images|length }}"
+               {% if forloop.first %}aria-current="true"{% endif %}>
+              <img src="{{ img.image.url }}" alt="" loading="lazy"/>
+            </a>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
 
       <!-- Buy box -->
