@@ -60,7 +60,7 @@
           <div class="panel-body">
             {% for line in cart %}
               <div class="row">
-                <span>{{ line.quantity }} × {{ line.product.name }}{% if line.color_name %} <span class="muted">({{ line.color_name }})</span>{% endif %}</span>
+                <span>{{ line.quantity }} × {{ line.product.name }}{% if line.color_name or line.size %} <span class="muted">({{ line.color_name }}{% if line.color_name and line.size %}, {% endif %}{% if line.size %}Size {{ line.size }}{% endif %})</span>{% endif %}</span>
                 <span>{{ line.line_total|rs }}</span>
               </div>
             {% endfor %}

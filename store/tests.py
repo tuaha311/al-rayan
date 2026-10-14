@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 from datetime import timedelta
 
@@ -192,3 +193,86 @@ class StoreSettingTests(TestCase):
         b = StoreSetting.load()
         self.assertEqual(a.pk, b.pk)
         self.assertEqual(StoreSetting.objects.count(), 1)
+
+
+class SizeTests(TestCase):
+    def setUp(self):
+        self.cat = Category.objects.create(name='Formals')
+        self.suit = Product.objects.create(
+            name='Formal Suit', sku='T-SZ-1', category=self.cat,
+            base_price=D('50000.00'), sold_by_meters=False, stock=5,
+        )
+        self.shawl = Product.objects.create(
+            name='Shawl', sku='T-SZ-2', category=self.cat,
+            base_price=D('20000.00'), sold_by_meters=False, sold_in_sizes=False, stock=5,
+        )
+        self.fabric = Product.objects.create(
+            name='Printed Lawn', sku='T-SZ-3', category=self.cat,
+            base_price=D('15000.00'), sold_by_meters=True, stock=5,
+        )
+
+    def _add(self, product, **extra):
+        return self.client.post(reverse('store:cart_add'), {
+            'product_id': product.id, 'quantity': 1, **extra,
+        })
+
+    def _cart(self):
+        return self.client.session.get('cart', {})
+
+    def test_uses_sizes(self):
+        self.assertTrue(self.suit.uses_sizes)
+        self.assertFalse(self.shawl.uses_sizes)
+        self.assertFalse(self.fabric.uses_sizes)   # cloth by the metre never does
+
+    def test_sized_product_requires_a_size(self):
+        r = self._add(self.suit)
+        self.assertRedirects(r, reverse('store:product_detail', args=[self.suit.slug]))
+        self.assertEqual(self._cart(), {})
+        self._add(self.suit, size='XXXL')
+        self.assertEqual(self._cart(), {})
+
+    def test_each_size_is_its_own_cart_line(self):
+        self._add(self.suit, size='M')
+        self._add(self.suit, size='M')
+        self._add(self.suit, size='L')
+        lines = sorted((row['size'], row['quantity']) for row in self._cart().values())
+        self.assertEqual(lines, [('L', 1), ('M', 2)])
+
+    def test_unsized_products_ignore_size(self):
+        self._add(self.shawl)
+        self._add(self.fabric, size='M')
+        self.assertEqual([row['size'] for row in self._cart().values()], ['', ''])
+
+    def test_checkout_records_size(self):
+        self._add(self.suit, size='S')
+        r = self.client.post(reverse('store:checkout'), {
+            'full_name': 'Test Buyer', 'phone': '+92 300 0000000',
+            'address_line': '1 Test Street', 'city': 'Lahore',
+            'province': constants.PROVINCE_PUNJAB,
+        })
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(OrderItem.objects.get().size, 'S')
+
+    def test_checkout_blocks_sized_line_without_size(self):
+        session = self.client.session
+        session['cart'] = {f'{self.suit.id}:0:0.00': {
+            'product_id': self.suit.id, 'variant_id': None,
+            'additional_meters': '0.00', 'quantity': 1,
+        }}
+        session.save()
+        r = self.client.get(reverse('store:checkout'))
+        self.assertRedirects(r, reverse('store:cart'))
+
+    def test_picker_and_guide_shown_only_for_sized_products(self):
+        r = self.client.get(reverse('store:product_detail', args=[self.suit.slug]))
+        self.assertContains(r, 'name="size"', count=len(constants.SIZES))
+        self.assertContains(r, 'id="size-guide-dialog"')
+        r = self.client.get(reverse('store:product_detail', args=[self.shawl.slug]))
+        self.assertNotContains(r, 'name="size"')
+        self.assertNotContains(r, 'id="size-guide-dialog"')
+
+    def test_size_guide_page(self):
+        r = self.client.get(reverse('store:size_guide'))
+        self.assertContains(r, 'Size Guide')
+        for size, bust, hip, length in constants.SHIRT_SIZE_CHART:
+            self.assertContains(r, f'<th scope="row">{size}</th><td>{bust}″</td>')

@@ -34,6 +34,7 @@
                   <a href="{% url 'store:product_detail' line.product.slug %}"><strong>{{ line.product.name }}</strong></a>
                   <div class="muted" style="font-size:13px">
                     {% if line.color_name %}Colour: {{ line.color_name }}{% endif %}
+                    {% if line.size %}{% if line.color_name %} · {% endif %}Size: {{ line.size }}{% elif line.product.uses_sizes %}<span style="color:var(--danger)">{% if line.color_name %} · {% endif %}Size not chosen</span>{% endif %}
                     {% if line.additional_meters %} · +{{ line.additional_meters|meters }} m length{% endif %}
                   </div>
                   <div class="muted" style="font-size:13px">{{ line.unit_price|rs }} each</div>

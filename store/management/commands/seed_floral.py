@@ -440,6 +440,8 @@ class Command(BaseCommand):
                     'base_meters': data['meters'] if by_meters else D('0.00'),
                     'additional_meter_price': D(data['extra']) if by_meters else D('0.00'),
                     'max_additional_meters': data['maxx'] if by_meters else D('0.00'),
+                    # Shawls are one size; every stitched piece takes the chart.
+                    'sold_in_sizes': data['category'] != 'shawls',
                     'is_featured': data['featured'],
                     'is_active': True,
                     'track_inventory': True,

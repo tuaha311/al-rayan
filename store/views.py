@@ -10,7 +10,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .cart import Cart
-from .constants import ANDROID_APK_PATH, ANDROID_APP_VERSION
+from .constants import (
+    ANDROID_APK_PATH,
+    ANDROID_APP_VERSION,
+    SHIRT_SIZE_CHART,
+    SIZES,
+    TROUSER_SIZE_CHART,
+)
 from .forms import CheckoutForm
 from .menu import MAIN_MENU
 from .models import (
@@ -198,7 +204,17 @@ def product_detail(request, slug):
         'meter_options': meter_options,
         'price_data': price_data,
         'related': related,
+        'sizes': SIZES,
+        **_size_charts(),
     })
+
+
+def _size_charts():
+    return {'shirt_sizes': SHIRT_SIZE_CHART, 'trouser_sizes': TROUSER_SIZE_CHART}
+
+
+def size_guide(request):
+    return render(request, 'store/size_guide.html', _size_charts())
 
 
 # ---------------------------------------------------------------------------
@@ -227,13 +243,20 @@ def cart_add(request):
     if additional > product.max_additional_meters:
         additional = product.max_additional_meters
 
+    size = ''
+    if product.uses_sizes:
+        size = request.POST.get('size', '')
+        if size not in SIZES:
+            messages.error(request, 'Please choose a size.')
+            return redirect('store:product_detail', slug=product.slug)
+
     try:
         quantity = int(request.POST.get('quantity', '1'))
     except (ValueError, TypeError):
         quantity = 1
 
     cart = Cart(request)
-    cart.add(product, variant, additional, quantity)
+    cart.add(product, variant, additional, quantity, size=size)
     messages.success(request, f'Added “{product.name}” to your cart.')
 
     if request.POST.get('buy_now'):
@@ -264,6 +287,11 @@ def checkout(request):
     if cart.is_empty:
         messages.info(request, 'Your cart is empty.')
         return redirect('store:cart')
+    # A line added before the product took sizes has none to make up.
+    if any(line['product'].uses_sizes and not line['size'] for line in cart):
+        messages.error(request, 'Some items in your cart need a size — '
+                                'remove them and add them again with a size.')
+        return redirect('store:cart')
 
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
@@ -275,6 +303,7 @@ def checkout(request):
                 item.populate_from(
                     line['product'], line['variant'],
                     line['additional_meters'], line['quantity'],
+                    size=line['size'],
                 )
                 item.save()
             order.recalculate_totals()

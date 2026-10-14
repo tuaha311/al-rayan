@@ -20,7 +20,7 @@
         <ul>
           <li><a href="{% url 'store:cart' %}">Your Cart</a></li>
           <li><a href="#">Delivery &amp; Returns</a></li>
-          <li><a href="#">Size &amp; Length Guide</a></li>
+          <li><a href="{% url 'store:size_guide' %}">Size &amp; Length Guide</a></li>
           <li><a href="#">Track Order</a></li>
           {% if not in_mobile_app %}
             {# Permanent home for the app once the floating prompt is dismissed. #}

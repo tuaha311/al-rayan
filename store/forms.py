@@ -22,7 +22,7 @@ class CheckoutForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'placeholder': 'e.g. Lahore'}),
             'postal_code': forms.TextInput(attrs={'placeholder': 'Optional'}),
             'customer_note': forms.Textarea(
-                attrs={'rows': 3, 'placeholder': 'Any delivery instructions (optional)'}),
+                attrs={'rows': 3, 'placeholder': 'Delivery instructions, trouser length… (optional)'}),
         }
 
     def __init__(self, *args, **kwargs):

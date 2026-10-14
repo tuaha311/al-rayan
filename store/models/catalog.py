@@ -211,6 +211,14 @@ class Product(TimeStampedModel):
         help_text='How many extra meters a customer may add (0 = none).',
     )
 
+    # --- Garment size ---------------------------------------------------------
+    sold_in_sizes = models.BooleanField(
+        default=True,
+        help_text='Stitched piece sold in standard sizes (XS–XXL): shows the '
+                  'size picker and size guide. Turn off for shawls and other '
+                  'one-size items. Ignored for cloth sold by meters.',
+    )
+
     # --- Inventory ------------------------------------------------------------
     track_inventory = models.BooleanField(default=True)
     stock = models.PositiveIntegerField(
@@ -273,6 +281,11 @@ class Product(TimeStampedModel):
         if self.sold_by_meters and extra > 0:
             price += extra * self.additional_meter_price
         return price.quantize(Decimal('0.01'))
+
+    @property
+    def uses_sizes(self):
+        """Whether a customer must pick a size (unstitched cloth never does)."""
+        return self.sold_in_sizes and not self.sold_by_meters
 
     @property
     def total_stock(self):

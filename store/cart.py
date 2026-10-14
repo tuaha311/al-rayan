@@ -13,8 +13,9 @@ CART_SESSION_KEY = 'cart'
 ZERO = Decimal('0.00')
 
 
-def _line_key(product_id, variant_id, additional_meters):
-    return f'{product_id}:{variant_id or 0}:{additional_meters}'
+def _line_key(product_id, variant_id, additional_meters, size=''):
+    key = f'{product_id}:{variant_id or 0}:{additional_meters}'
+    return f'{key}:{size}' if size else key
 
 
 class Cart:
@@ -27,11 +28,11 @@ class Cart:
 
     # -- mutations ----------------------------------------------------------
     def add(self, product, variant=None, additional_meters=ZERO, quantity=1,
-            replace=False):
+            replace=False, size=''):
         quantity = max(int(quantity), 1)
         additional_meters = str(Decimal(additional_meters or 0).quantize(Decimal('0.01')))
         variant_id = variant.id if variant else None
-        key = _line_key(product.id, variant_id, additional_meters)
+        key = _line_key(product.id, variant_id, additional_meters, size)
         existing = self.cart.get(key)
         if existing and not replace:
             existing['quantity'] += quantity
@@ -40,6 +41,7 @@ class Cart:
                 'product_id': product.id,
                 'variant_id': variant_id,
                 'additional_meters': additional_meters,
+                'size': size,
                 'quantity': quantity,
             }
         self.save()
@@ -90,6 +92,8 @@ class Cart:
                 'product': product,
                 'variant': variant,
                 'color_name': variant.color.name if variant else '',
+                # Lines saved before sizes existed have no 'size'.
+                'size': row.get('size', ''),
                 'additional_meters': extra,
                 'quantity': quantity,
                 'unit_price': unit_price,

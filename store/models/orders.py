@@ -169,6 +169,7 @@ class OrderItem(TimeStampedModel):
     product_name = models.CharField(max_length=200)
     sku = models.CharField(max_length=50, blank=True)
     color_name = models.CharField(max_length=60, blank=True)
+    size = models.CharField(max_length=5, blank=True, choices=constants.SIZE_CHOICES)
     base_meters = models.DecimalField(max_digits=5, decimal_places=2, default=ZERO)
     additional_meters = models.DecimalField(max_digits=5, decimal_places=2, default=ZERO)
 
@@ -186,7 +187,8 @@ class OrderItem(TimeStampedModel):
     def __str__(self):
         return f'{self.quantity} × {self.product_name}'
 
-    def populate_from(self, product, variant=None, additional_meters=ZERO, quantity=1):
+    def populate_from(self, product, variant=None, additional_meters=ZERO, quantity=1,
+                      size=''):
         """Fill snapshot fields and pricing from a live product."""
         extra = Decimal(additional_meters or 0)
         self.product = product
@@ -194,6 +196,7 @@ class OrderItem(TimeStampedModel):
         self.product_name = product.name
         self.sku = (variant.sku if variant and variant.sku else product.sku)
         self.color_name = variant.color.name if variant else ''
+        self.size = size if product.uses_sizes else ''
         self.base_meters = product.base_meters if product.sold_by_meters else ZERO
         self.additional_meters = extra if product.sold_by_meters else ZERO
 

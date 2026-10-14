@@ -1,0 +1,14 @@
+{% extends "store/base.html" %}
+
+{% block title %}Size Guide — {{ store_settings.store_name }}{% endblock %}
+{% block description %}Floral Finesse size chart: bust, hip, waist and shirt length for sizes XS to XXL.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container size-guide-page">
+    <span class="eyebrow">Formal wear</span>
+    <h1>Size Guide</h1>
+    {% include "store/partials/size_guide.html" %}
+  </div>
+</section>
+{% endblock %}

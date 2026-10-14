@@ -529,6 +529,50 @@ select.sort, .field-input { font: inherit; padding: 9px 12px; border: 1px solid 
   box-shadow: inset 0 0 0 3px #fff; transition: .15s; display: block; }
 .opt-color input:checked + .dot { outline: 2px solid var(--charcoal); outline-offset: 2px; }
 .opt-color .nm { display: block; text-align: center; font-size: 11px; color: var(--muted); margin-top: 4px; }
+.size-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.size-head label.h { margin-bottom: 10px; }
+.size-guide-link { font-size: 13px; font-weight: 600; color: var(--ink-soft);
+  text-decoration: underline; text-underline-offset: 3px; }
+.size-guide-link:hover { color: var(--charcoal); }
+.opt-sizes { display: flex; gap: 8px; flex-wrap: wrap; }
+.opt-size { cursor: pointer; position: relative; }
+/* Kept focusable and in place (not display:none) so the browser's
+   "please choose a size" bubble can point at the picker. */
+.opt-size input { position: absolute; inset: 0; opacity: 0; margin: 0; pointer-events: none; }
+.opt-size span { display: inline-flex; align-items: center; justify-content: center;
+  min-width: 48px; height: 40px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.15); background: var(--glass-bg-soft);
+  font-weight: 600; font-size: 14px; transition: .15s; }
+.opt-size:hover span { border-color: var(--charcoal); }
+.opt-size input:checked + span { background: var(--charcoal); border-color: var(--charcoal); color: #fff; }
+.opt-size input:focus-visible + span { outline: 2px solid var(--charcoal); outline-offset: 2px; }
+
+/* ---- Size guide (popup on the product page + its own page) ------------- */
+.size-guide { font-size: 14px; }
+.sg-intro { color: var(--muted); margin: 0 0 18px; }
+.sg-title { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 600;
+  margin: 22px 0 10px; }
+.sg-scroll { overflow-x: auto; }
+.sg-table { width: 100%; border-collapse: collapse; text-align: center; }
+.sg-table th, .sg-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.sg-table thead th { background: var(--grey-50); color: var(--ink-soft); font-size: 12px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.sg-table tbody th { font-weight: 700; }
+.sg-note { margin-top: 22px; padding: 14px 16px; border-radius: 10px; background: var(--grey-50);
+  display: grid; gap: 4px; }
+.sg-note span { color: var(--muted); font-size: 13px; }
+.size-guide-page { max-width: 720px; }
+.size-guide-page h1 { margin: 6px 0 18px; }
+.sg-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 48px);
+  border: 0; border-radius: var(--radius); padding: 0; box-shadow: var(--shadow-lg);
+  background: var(--card); color: var(--ink); }
+.sg-dialog-inner { padding: 22px 24px 24px; }
+.sg-dialog::backdrop { background: rgba(23, 23, 23, .45); }
+.sg-dialog-head { display: flex; align-items: center; justify-content: space-between; }
+.sg-dialog-head h2 { font-size: 24px; margin: 0; }
+.sg-close { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line);
+  background: transparent; font-size: 22px; line-height: 1; cursor: pointer; }
+.sg-close:hover { border-color: var(--charcoal); }
 .meter-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .qty { display: inline-flex; align-items: center; border: 1px solid var(--glass-border);
   border-radius: 10px; overflow: hidden; background: var(--glass-bg-soft);

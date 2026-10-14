@@ -366,6 +366,22 @@
     }
   }
 
+  // --- Product detail: size picker + size guide popup -------------------
+  // Without JS the guide links open the size-guide page instead.
+  var sizeLabel = document.getElementById('chosen-size');
+  if (sizeLabel) {
+    document.addEventListener('change', function (e) {
+      if (e.target.name === 'size') sizeLabel.textContent = e.target.value;
+    });
+  }
+  var sgDialog = document.getElementById('size-guide-dialog');
+  if (sgDialog && sgDialog.showModal) {
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-size-guide]')) { e.preventDefault(); sgDialog.showModal(); }
+      else if (e.target.closest('[data-size-guide-close]') || e.target === sgDialog) sgDialog.close();
+    });
+  }
+
   // --- Product detail: live price preview -------------------------------
   var priceEl = document.getElementById('live-price');
   var dataEl = document.getElementById('price-data');

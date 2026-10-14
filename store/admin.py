@@ -159,6 +159,9 @@ class ProductAdmin(ModelAdmin):
         ('Pricing', {
             'fields': ('base_price',),
         }),
+        ('Size', {
+            'fields': ('sold_in_sizes',),
+        }),
         ('Unstitched cloth — length', {
             'fields': (
                 'sold_by_meters', 'base_meters',
@@ -271,7 +274,7 @@ class OrderItemInline(TabularInline):
     autocomplete_fields = ('product', 'variant')
     readonly_fields = ('unit_original_price', 'unit_price', 'line_total')
     fields = (
-        'product', 'variant', 'color_name', 'additional_meters',
+        'product', 'variant', 'color_name', 'size', 'additional_meters',
         'quantity', 'unit_original_price', 'unit_price', 'line_total',
     )
 
@@ -348,6 +351,7 @@ class OrderAdmin(ModelAdmin):
             if item.product and not item.unit_price:
                 item.populate_from(
                     item.product, item.variant, item.additional_meters, item.quantity,
+                    size=item.size,
                 )
                 item.save()
         order.recalculate_totals()

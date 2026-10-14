@@ -91,6 +91,23 @@
           </div>
           {% endif %}
 
+          {% if product.uses_sizes %}
+          <div class="option-block">
+            <div class="size-head">
+              <label class="h" id="size-label">Size: <span id="chosen-size">Select</span></label>
+              <a href="{% url 'store:size_guide' %}" class="size-guide-link" data-size-guide>Size guide</a>
+            </div>
+            <div class="opt-sizes" role="radiogroup" aria-labelledby="size-label">
+              {% for s in sizes %}
+                <label class="opt-size">
+                  <input type="radio" name="size" value="{{ s }}" required/>
+                  <span>{{ s }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
           {% if meter_options %}
           <div class="option-block">
             <label class="h" for="meters-select">Add extra length</label>
@@ -135,6 +152,7 @@
           {% if product.season %}<tr><th>Season</th><td>{{ product.season.name }}</td></tr>{% endif %}
           {% if product.sold_by_meters %}<tr><th>Base length</th><td>{{ product.base_meters|meters }} metres</td></tr>{% endif %}
           <tr><th>Category</th><td>{{ product.category.name }}</td></tr>
+          {% if product.uses_sizes %}<tr><th>Sizes</th><td>{{ sizes|first }}–{{ sizes|last }} · <a href="{% url 'store:size_guide' %}" class="size-guide-link" data-size-guide>Size guide</a></td></tr>{% endif %}
           <tr><th>Available colours</th><td>{{ variants|length }}</td></tr>
         </table>
       </div>
@@ -150,6 +168,19 @@
     {% endif %}
   </div>
 </section>
+
+{% if product.uses_sizes %}
+<dialog class="sg-dialog" id="size-guide-dialog" aria-labelledby="sg-dialog-title">
+  {# Padding lives on this wrapper so a click on the dialog itself is a backdrop click. #}
+  <div class="sg-dialog-inner">
+    <div class="sg-dialog-head">
+      <h2 id="sg-dialog-title">Size Guide</h2>
+      <button type="button" class="sg-close" data-size-guide-close aria-label="Close size guide">×</button>
+    </div>
+    {% include "store/partials/size_guide.html" %}
+  </div>
+</dialog>
+{% endif %}
 
 {{ price_data|json_script:"price-data" }}
 {% endblock %}

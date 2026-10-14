@@ -37,6 +37,32 @@ PROVINCE_CHOICES = [
 ]
 
 
+# --- Garment sizes ---------------------------------------------------------
+# One chart covers every stitched piece. Body measurements in inches, from
+# the label's printed Formal Wear size guide.
+SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+SIZE_CHOICES = [(s, s) for s in SIZES]
+
+# (size, bust, hip, shirt length)
+SHIRT_SIZE_CHART = [
+    ('XS', 34, 36, 47),
+    ('S', 36, 38, 47),
+    ('M', 38, 40, 47),
+    ('L', 40, 42, 47),
+    ('XL', 42, 44, 47),
+    ('XXL', 44, 46, 47),
+]
+# (size, waist, hip)
+TROUSER_SIZE_CHART = [
+    ('XS', 28, 36),
+    ('S', 30, 38),
+    ('M', 32, 40),
+    ('L', 34, 42),
+    ('XL', 36, 44),
+    ('XXL', 38, 46),
+]
+
+
 class DiscountType:
     PERCENTAGE = 'percentage'
     FIXED = 'fixed'
