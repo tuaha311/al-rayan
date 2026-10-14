@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
@@ -13,6 +14,7 @@ from unfold.contrib.filters.admin import (
     RelatedDropdownFilter,
 )
 from unfold.decorators import display
+from unfold.widgets import UnfoldAdminIntegerFieldWidget
 
 from . import constants
 from .models import (
@@ -112,11 +114,50 @@ class ProductImageInline(TabularInline):
         return '—'
 
 
+def _size_field(size):
+    return forms.IntegerField(
+        label=size, required=False, min_value=0,
+        widget=UnfoldAdminIntegerFieldWidget(attrs={'style': 'width:4.5rem'}),
+    )
+
+
+class SizeStockForm(forms.ModelForm):
+    """Edits ``size_stock`` as one box per size. Leave all six blank to keep
+    a single stock figure shared by every size; fill any and the blanks
+    count as 0 and the stock figure becomes their total."""
+
+    size_xs = _size_field('XS')
+    size_s = _size_field('S')
+    size_m = _size_field('M')
+    size_l = _size_field('L')
+    size_xl = _size_field('XL')
+    size_xxl = _size_field('XXL')
+
+    SIZE_FIELDS = [(s, f'size_{s.lower()}') for s in constants.SIZES]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for size, name in self.SIZE_FIELDS:
+            self.fields[name].initial = (self.instance.size_stock or {}).get(size)
+
+    def save(self, commit=True):
+        counts = {size: self.cleaned_data.get(name) for size, name in self.SIZE_FIELDS}
+        self.instance.size_stock = (
+            {} if all(v is None for v in counts.values())
+            else {size: v or 0 for size, v in counts.items()}
+        )
+        return super().save(commit)
+
+
+SIZE_STOCK_FIELDS = tuple(name for _, name in SizeStockForm.SIZE_FIELDS)
+
+
 class ProductVariantInline(TabularInline):
     model = ProductVariant
+    form = SizeStockForm
     extra = 1
     autocomplete_fields = ('color',)
-    fields = ('color', 'sku', 'price_delta', 'stock', 'is_active')
+    fields = ('color', 'sku', 'price_delta', 'stock', *SIZE_STOCK_FIELDS, 'is_active')
 
 
 @admin.register(ProductVariant)
@@ -146,6 +187,7 @@ class ProductAdmin(ModelAdmin):
     search_fields = ('name', 'sku', 'short_description')
     prepopulated_fields = {'slug': ('name',)}
     autocomplete_fields = ('category', 'fabric', 'season')
+    form = SizeStockForm
     inlines = (ProductVariantInline, ProductImageInline)
     actions = ('activate', 'deactivate', 'feature', 'unfeature')
     list_select_related = ('category', 'fabric', 'season')
@@ -171,7 +213,12 @@ class ProductAdmin(ModelAdmin):
                            '“sold by meters” and price per unit.',
         }),
         ('Inventory & visibility', {
-            'fields': ('track_inventory', 'stock', 'is_active', 'is_featured'),
+            'fields': ('track_inventory', 'stock', SIZE_STOCK_FIELDS,
+                       'is_active', 'is_featured'),
+            'description': 'Stock per size applies to sized pieces: on each '
+                           'colour row below, or here when the product has no '
+                           'colours. Leave the size boxes blank to share one '
+                           'stock figure across all sizes.',
         }),
     )
 

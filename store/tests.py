@@ -276,3 +276,118 @@ class SizeTests(TestCase):
         self.assertContains(r, 'Size Guide')
         for size, bust, hip, length in constants.SHIRT_SIZE_CHART:
             self.assertContains(r, f'<th scope="row">{size}</th><td>{bust}″</td>')
+
+
+class StockLimitTests(TestCase):
+    def setUp(self):
+        self.cat = Category.objects.create(name='Formals')
+        self.red = Color.objects.create(name='Red', hex_code='#B3202A')
+        self.suit = Product.objects.create(
+            name='Formal Suit', sku='T-ST-1', category=self.cat,
+            base_price=D('50000.00'), sold_by_meters=False,
+        )
+        self.variant = ProductVariant.objects.create(
+            product=self.suit, color=self.red,
+            size_stock={'XS': 0, 'S': 2, 'M': 4, 'L': 0, 'XL': 0, 'XXL': 0},
+        )
+        self.shawl = Product.objects.create(
+            name='Shawl', sku='T-ST-2', category=self.cat, base_price=D('20000.00'),
+            sold_by_meters=False, sold_in_sizes=False, stock=3,
+        )
+
+    def _add(self, product, variant=None, **extra):
+        data = {'product_id': product.id, 'quantity': 1, **extra}
+        if variant:
+            data['variant_id'] = variant.id
+        return self.client.post(reverse('store:cart_add'), data)
+
+    def _quantities(self):
+        return sorted((row.get('size', ''), row['quantity'])
+                      for row in self.client.session.get('cart', {}).values())
+
+    def _checkout(self):
+        return self.client.post(reverse('store:checkout'), {
+            'full_name': 'Test Buyer', 'phone': '+92 300 0000000',
+            'address_line': '1 Test Street', 'city': 'Lahore',
+            'province': constants.PROVINCE_PUNJAB,
+        })
+
+    def test_stock_is_the_total_of_its_sizes(self):
+        self.assertEqual(self.variant.stock, 6)
+        self.assertEqual(self.suit.stock_left(self.variant, 'M'), 4)
+        self.assertEqual(self.suit.stock_left(self.variant, 'L'), 0)
+
+    def test_unsplit_stock_is_shared_by_every_size(self):
+        self.variant.size_stock = {}
+        self.variant.stock = 3
+        self.variant.save()
+        self.assertEqual(self.suit.stock_left(self.variant, 'XL'), 3)
+        self._add(self.suit, self.variant, size='M', quantity=2)
+        self._add(self.suit, self.variant, size='L', quantity=5)
+        self.assertEqual(self._quantities(), [('L', 1), ('M', 2)])
+
+    def test_untracked_stock_has_no_limit(self):
+        self.shawl.track_inventory = False
+        self.shawl.save()
+        self.assertIsNone(self.shawl.stock_left())
+        self._add(self.shawl, quantity=50)
+        self.assertEqual(self._quantities(), [('', 50)])
+
+    def test_add_caps_quantity_at_stock_left_in_that_size(self):
+        self._add(self.suit, self.variant, size='S', quantity=5)
+        self.assertEqual(self._quantities(), [('S', 2)])
+        self._add(self.suit, self.variant, size='S')   # nothing left to add
+        self.assertEqual(self._quantities(), [('S', 2)])
+
+    def test_sold_out_size_cannot_be_added(self):
+        r = self._add(self.suit, self.variant, size='L')
+        self.assertRedirects(r, reverse('store:product_detail', args=[self.suit.slug]))
+        self.assertEqual(self._quantities(), [])
+
+    def test_colour_is_required_when_the_product_has_colours(self):
+        self._add(self.suit, size='M')
+        self.assertEqual(self._quantities(), [])
+
+    def test_update_caps_quantity(self):
+        self._add(self.shawl)
+        key = next(iter(self.client.session['cart']))
+        self.client.post(reverse('store:cart_update'), {'key': key, 'quantity': 9})
+        self.assertEqual(self._quantities(), [('', 3)])
+
+    def test_checkout_takes_stock(self):
+        self._add(self.suit, self.variant, size='M', quantity=3)
+        self._add(self.shawl, quantity=2)
+        self.assertEqual(self._checkout().status_code, 302)
+        self.variant.refresh_from_db()
+        self.shawl.refresh_from_db()
+        self.assertEqual(self.variant.size_stock['M'], 1)
+        self.assertEqual(self.variant.stock, 3)
+        self.assertEqual(self.shawl.stock, 1)
+
+    def test_checkout_blocked_when_stock_ran_out(self):
+        self._add(self.suit, self.variant, size='M', quantity=3)
+        self.variant.size_stock['M'] = 1     # someone else bought them
+        self.variant.save()
+        r = self._checkout()
+        self.assertRedirects(r, reverse('store:cart'))
+        self.assertFalse(Order.objects.exists())
+        self.variant.refresh_from_db()
+        self.assertEqual(self.variant.size_stock['M'], 1)
+
+    def test_take_stock_rolls_back_whole_order(self):
+        from django.db import transaction
+        from .models import OutOfStock
+        with self.assertRaises(OutOfStock):
+            with transaction.atomic():
+                self.shawl.take_stock(None, '', 2)
+                self.suit.take_stock(self.variant, 'S', 3)
+        self.shawl.refresh_from_db()
+        self.assertEqual(self.shawl.stock, 3)
+
+    def test_product_page_marks_sold_out_sizes(self):
+        r = self.client.get(reverse('store:product_detail', args=[self.suit.slug]))
+        self.assertContains(r, 'value="L" required disabled')
+        self.assertContains(r, 'value="M" required/>')
+        r = self.client.get(reverse('store:product_detail', args=[self.shawl.slug]))
+        self.assertContains(r, 'Only 3 left')
+        self.assertContains(r, 'data-max="3"')

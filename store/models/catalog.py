@@ -148,6 +148,15 @@ class Color(TimeStampedModel):
         super().save(*args, **kwargs)
 
 
+class OutOfStock(Exception):
+    """Raised when an order asks for more units than are left."""
+
+    def __init__(self, product, left):
+        super().__init__(f'Only {left} of {product.name} left')
+        self.product = product
+        self.left = left
+
+
 class ProductQuerySet(models.QuerySet):
     def active(self):
         return self.filter(is_active=True)
@@ -225,6 +234,11 @@ class Product(TimeStampedModel):
         default=0,
         help_text='Stock used when the product has no colour variants.',
     )
+    size_stock = models.JSONField(
+        default=dict, blank=True,
+        help_text='Units per size, used when the product has no colour '
+                  'variants. Once set, the stock figure is their total.',
+    )
 
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
@@ -244,6 +258,8 @@ class Product(TimeStampedModel):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)[:220]
+        if self.uses_sizes and self.size_stock:
+            self.stock = sum(self.size_stock.values())
         super().save(*args, **kwargs)
 
     # --- Pricing -------------------------------------------------------------
@@ -287,6 +303,38 @@ class Product(TimeStampedModel):
         """Whether a customer must pick a size (unstitched cloth never does)."""
         return self.sold_in_sizes and not self.sold_by_meters
 
+    # --- Stock ---------------------------------------------------------------
+    def splits_stock_by_size(self, variant=None):
+        """Whether this colour (or the product, without colours) counts
+        stock per size. Until per-size figures are entered, every size draws
+        on the overall stock."""
+        return self.uses_sizes and bool((variant or self).size_stock)
+
+    def stock_left(self, variant=None, size=''):
+        """Units still for sale in this colour / size; ``None`` if untracked."""
+        if not self.track_inventory:
+            return None
+        holder = variant or self
+        if size and self.splits_stock_by_size(variant):
+            return holder.size_stock.get(size, 0)
+        return holder.stock
+
+    def take_stock(self, variant, size, quantity):
+        """Remove sold units, locking the stock row. Call inside a
+        transaction; raises ``OutOfStock`` if too few are left."""
+        if not self.track_inventory:
+            return
+        model = ProductVariant if variant else Product
+        holder = model.objects.select_for_update().get(pk=(variant or self).pk)
+        split = size and self.uses_sizes and holder.size_stock
+        left = holder.size_stock.get(size, 0) if split else holder.stock
+        if quantity > left:
+            raise OutOfStock(self, left)
+        if split:
+            holder.size_stock[size] = left - quantity
+        holder.stock = max(holder.stock - quantity, 0)
+        holder.save(update_fields=['stock', 'size_stock'])
+
     @property
     def total_stock(self):
         if self.pk and self.variants.exists():
@@ -320,6 +368,11 @@ class ProductVariant(TimeStampedModel):
         help_text='Added to (or subtracted from) the base price for this colour.',
     )
     stock = models.PositiveIntegerField(default=0)
+    size_stock = models.JSONField(
+        default=dict, blank=True,
+        help_text='Units of this colour per size. Once set, the stock figure '
+                  'is their total.',
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -332,6 +385,11 @@ class ProductVariant(TimeStampedModel):
 
     def __str__(self):
         return f'{self.product.name} — {self.color.name}'
+
+    def save(self, *args, **kwargs):
+        if self.size_stock and self.product.uses_sizes:
+            self.stock = sum(self.size_stock.values())
+        super().save(*args, **kwargs)
 
     @property
     def price(self):

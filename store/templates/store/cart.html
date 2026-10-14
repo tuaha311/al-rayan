@@ -38,6 +38,11 @@
                     {% if line.additional_meters %} · +{{ line.additional_meters|meters }} m length{% endif %}
                   </div>
                   <div class="muted" style="font-size:13px">{{ line.unit_price|rs }} each</div>
+                  {% if line.over_stock %}
+                    <p class="stock-note is-out">{% if line.max_quantity %}Only {{ line.max_quantity }} available — please lower the quantity{% else %}Sold out — please remove it{% endif %}</p>
+                  {% elif line.low_stock %}
+                    <p class="stock-note">Only {{ line.stock_left }} left</p>
+                  {% endif %}
                 </div>
                 <div class="ci-total"><strong>{{ line.line_total|rs }}</strong></div>
                 <div class="ci-actions">
@@ -46,7 +51,7 @@
                     <input type="hidden" name="key" value="{{ line.key }}"/>
                     <div class="qty">
                       <button type="button" data-step="-1">−</button>
-                      <input type="text" name="quantity" value="{{ line.quantity }}" inputmode="numeric"/>
+                      <input type="text" name="quantity" value="{{ line.quantity }}" inputmode="numeric"{% if line.max_quantity %} data-max="{{ line.max_quantity }}"{% endif %}/>
                       <button type="button" data-step="1">+</button>
                     </div>
                     <button type="submit" class="btn btn-ghost btn-sm">Update</button>
@@ -71,7 +76,12 @@
               <div class="row" style="color:#047857"><span>Free shipping</span><span>✓ Unlocked</span></div>
             {% endif %}
             <div class="row total"><span>Total</span><span>{{ cart.subtotal|rs }}+</span></div>
-            <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block" style="margin-top:16px">Proceed to checkout</a>
+            {% if cart.has_stock_problems %}
+              <button type="button" class="btn btn-primary btn-block" style="margin-top:16px" disabled>Proceed to checkout</button>
+              <p class="stock-note is-out">Some items exceed the stock left — update them to continue.</p>
+            {% else %}
+              <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block" style="margin-top:16px">Proceed to checkout</a>
+            {% endif %}
             <a href="{% url 'store:product_list' %}" class="btn btn-ghost btn-block" style="margin-top:10px">Continue shopping</a>
             <div class="cod-banner" style="margin-top:16px">💵 Cash on Delivery available</div>
           </div>

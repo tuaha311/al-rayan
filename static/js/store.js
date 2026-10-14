@@ -291,8 +291,10 @@
     if (!wrap) return;
     var input = wrap.querySelector('input');
     var val = parseInt(input.value, 10) || 1;
+    var max = parseInt(input.getAttribute('data-max'), 10);
     val += parseInt(btn.getAttribute('data-step'), 10);
     if (val < 1) val = 1;
+    if (max > 0 && val > max) val = max;
     input.value = val;
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
@@ -380,6 +382,76 @@
       if (e.target.closest('[data-size-guide]')) { e.preventDefault(); sgDialog.showModal(); }
       else if (e.target.closest('[data-size-guide-close]') || e.target === sgDialog) sgDialog.close();
     });
+  }
+
+  // --- Product detail: stock left for the chosen colour / size ----------
+  // Sold-out sizes are disabled per colour, the note reads "Only n left"
+  // once stock runs low, and the quantity can't pass what is left. The
+  // server re-checks all of this on add-to-cart and checkout.
+  var stockEl = document.getElementById('stock-data');
+  var buyForm = document.getElementById('add-form');
+  if (stockEl && buyForm) {
+    var stock = JSON.parse(stockEl.textContent);
+    var note = document.getElementById('stock-note');
+    var qtyInput = document.getElementById('qty-input');
+    var buyBtns = buyForm.querySelectorAll('[data-buy]');
+    var sizeInputs = buyForm.querySelectorAll('input[name="size"]');
+
+    var syncStock = function () {
+      var colour = buyForm.querySelector('input[name="variant_id"]:checked');
+      var entry = stock.byVariant[colour ? colour.value : '0'];
+      if (!entry) return;
+      var sizeIn = buyForm.querySelector('input[name="size"]:checked');
+
+      if (entry.sizes) {
+        sizeInputs.forEach(function (input) {
+          var out = entry.sizes[input.value] === 0;
+          input.disabled = out;
+          input.parentNode.classList.toggle('is-out', out);
+          input.parentNode.title = out ? 'Sold out' : '';
+          if (out && input.checked) {
+            input.checked = false;
+            sizeIn = null;
+            var label = document.getElementById('chosen-size');
+            if (label) label.textContent = 'Select';
+          }
+        });
+      }
+
+      // null = untracked, or a sized piece with no size picked yet.
+      var left = entry.sizes ? (sizeIn ? entry.sizes[sizeIn.value] : null) : entry.total;
+      var soldOut = entry.total === 0 || left === 0;
+      var text = '';
+      if (soldOut) text = entry.sizes && sizeIn && entry.total !== 0
+        ? 'Sold out in size ' + sizeIn.value : 'Sold out';
+      else if (left !== null && left <= stock.low) text = 'Only ' + left + ' left' +
+        (sizeIn ? ' in size ' + sizeIn.value : '');
+      note.textContent = text;
+      note.classList.toggle('is-out', soldOut);
+
+      buyBtns.forEach(function (b) { b.disabled = soldOut; });
+      if (left !== null && left > 0) {
+        qtyInput.setAttribute('data-max', left);
+        if ((parseInt(qtyInput.value, 10) || 1) > left) {
+          qtyInput.value = left;
+          qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      } else {
+        qtyInput.removeAttribute('data-max');
+      }
+    };
+
+    buyForm.addEventListener('change', function (e) {
+      if (e.target.name === 'variant_id' || e.target.name === 'size') syncStock();
+    });
+    qtyInput.addEventListener('change', function () {
+      var max = parseInt(qtyInput.getAttribute('data-max'), 10);
+      if (max > 0 && (parseInt(qtyInput.value, 10) || 1) > max) {
+        qtyInput.value = max;
+        qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    syncStock();
   }
 
   // --- Product detail: live price preview -------------------------------

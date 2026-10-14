@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -13,6 +14,7 @@ from .cart import Cart
 from .constants import (
     ANDROID_APK_PATH,
     ANDROID_APP_VERSION,
+    LOW_STOCK_THRESHOLD,
     SHIRT_SIZE_CHART,
     SIZES,
     TROUSER_SIZE_CHART,
@@ -24,6 +26,7 @@ from .models import (
     Color,
     Fabric,
     Order,
+    OutOfStock,
     Product,
     ProductImage,
     ProductVariant,
@@ -193,6 +196,26 @@ def product_detail(request, slug):
         'variantDeltas': {str(v.id): str(v.price_delta) for v in variants},
     }
 
+    # Units left per colour (and per size) for the stock note, the size
+    # buttons and the quantity cap — keyed by variant id, 0 without colours.
+    holders = variants or [None]
+    stock_data = {
+        'low': LOW_STOCK_THRESHOLD,
+        'byVariant': {
+            str(v.id if v else 0): {
+                'total': product.stock_left(v),
+                'sizes': ({s: product.stock_left(v, s) for s in SIZES}
+                          if product.uses_sizes else None),
+            }
+            for v in holders
+        },
+    }
+    for v in variants:
+        v.stock_left = product.stock_left(v)
+    # The first colour starts selected; render its state for no-JS visitors.
+    first_left = product.stock_left(holders[0])
+    size_options = [(s, product.stock_left(holders[0], s)) for s in SIZES]
+
     related = list(
         _active_products().filter(category=product.category).exclude(id=product.id)[:4]
     )
@@ -203,10 +226,30 @@ def product_detail(request, slug):
         'images': images,
         'meter_options': meter_options,
         'price_data': price_data,
+        'stock_data': stock_data,
+        'stock_note': _stock_note(first_left) if not product.uses_sizes or first_left == 0 else '',
+        'sold_out': first_left == 0,
+        # Sized pieces get their cap once a size is picked.
+        'max_quantity': None if product.uses_sizes else first_left,
+        'size_options': size_options,
         'related': related,
         'sizes': SIZES,
         **_size_charts(),
     })
+
+
+def _stock_note(left):
+    """'Sold out' / 'Only n left' once stock runs low; blank otherwise."""
+    if left is None or left > LOW_STOCK_THRESHOLD:
+        return ''
+    return 'Sold out' if left == 0 else f'Only {left} left'
+
+
+def _describe(product, variant=None, size=''):
+    """“Name” (Colour, size M) — for cart messages."""
+    details = [d for d in (variant.color.name if variant else '',
+                           f'size {size}' if size else '') if d]
+    return f'“{product.name}”' + (f' ({", ".join(details)})' if details else '')
 
 
 def _size_charts():
@@ -243,6 +286,10 @@ def cart_add(request):
     if additional > product.max_additional_meters:
         additional = product.max_additional_meters
 
+    if variant is None and product.variants.filter(is_active=True).exists():
+        messages.error(request, 'Please choose a colour.')
+        return redirect('store:product_detail', slug=product.slug)
+
     size = ''
     if product.uses_sizes:
         size = request.POST.get('size', '')
@@ -251,13 +298,25 @@ def cart_add(request):
             return redirect('store:product_detail', slug=product.slug)
 
     try:
-        quantity = int(request.POST.get('quantity', '1'))
+        quantity = max(int(request.POST.get('quantity', '1')), 1)
     except (ValueError, TypeError):
         quantity = 1
 
     cart = Cart(request)
+    what = _describe(product, variant, size)
+    left = product.stock_left(variant, size)
+    room = None if left is None else left - cart.quantity_in_pool(product, variant, size)
+    if room is not None and room <= 0:
+        messages.error(request, f'Sorry, {what} is sold out.' if left == 0 else
+                       f'Your cart already holds the last {left} of {what}.')
+        return redirect('store:product_detail', slug=product.slug)
+    if room is not None and quantity > room:
+        quantity = room
+        messages.warning(request, f'Only {room} more of {what} available — '
+                                  f'added {room} to your cart.')
+    else:
+        messages.success(request, f'Added {what} to your cart.')
     cart.add(product, variant, additional, quantity, size=size)
-    messages.success(request, f'Added “{product.name}” to your cart.')
 
     if request.POST.get('buy_now'):
         return redirect('store:checkout')
@@ -267,7 +326,17 @@ def cart_add(request):
 @require_POST
 def cart_update(request):
     cart = Cart(request)
-    cart.set_quantity(request.POST.get('key', ''), request.POST.get('quantity', '1'))
+    key = request.POST.get('key', '')
+    cart.set_quantity(key, request.POST.get('quantity', '1'))
+    line = next((line for line in cart if line['key'] == key), None)
+    if line and line['over_stock']:
+        what = _describe(line['product'], line['variant'], line['size'])
+        cart.set_quantity(key, line['max_quantity'])   # 0 removes the line
+        if line['max_quantity']:
+            messages.warning(request, f'Only {line["max_quantity"]} of {what} available — '
+                                      f'quantity updated.')
+        else:
+            messages.error(request, f'Sorry, {what} is sold out and was removed.')
     return redirect('store:cart')
 
 
@@ -292,21 +361,34 @@ def checkout(request):
         messages.error(request, 'Some items in your cart need a size — '
                                 'remove them and add them again with a size.')
         return redirect('store:cart')
+    if cart.has_stock_problems:
+        messages.error(request, 'Some items in your cart are no longer available in '
+                                'that quantity — please review your cart.')
+        return redirect('store:cart')
 
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
         if form.is_valid():
-            order = form.save(commit=False)
-            order.save()
-            for line in cart:
-                item = order.items.model(order=order)
-                item.populate_from(
-                    line['product'], line['variant'],
-                    line['additional_meters'], line['quantity'],
-                    size=line['size'],
-                )
-                item.save()
-            order.recalculate_totals()
+            # Stock is taken line by line under row locks; if anything sold
+            # out meanwhile, the whole order rolls back.
+            try:
+                with transaction.atomic():
+                    order = form.save()
+                    for line in cart:
+                        line['product'].take_stock(
+                            line['variant'], line['size'], line['quantity'])
+                        item = order.items.model(order=order)
+                        item.populate_from(
+                            line['product'], line['variant'],
+                            line['additional_meters'], line['quantity'],
+                            size=line['size'],
+                        )
+                        item.save()
+                    order.recalculate_totals()
+            except OutOfStock:
+                messages.error(request, 'Sorry — some items sold out while you were '
+                                        'checking out. Please review your cart.')
+                return redirect('store:cart')
             cart.clear()
             request.session['recent_order'] = order.order_number
             return redirect('store:order_complete', order_number=order.order_number)

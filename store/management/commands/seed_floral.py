@@ -121,6 +121,10 @@ CATEGORIES = [
     ('Shawls', None, 2, 'Hand-painted and embroidered shawls and wraps.', 'pexels-4972976.jpg'),
 ]
 
+# Units per size in a sized piece's first colour; each later colour carries
+# one fewer of every size.
+SIZE_RUN = {'XS': 1, 'S': 3, 'M': 6, 'L': 5, 'XL': 2, 'XXL': 1}
+
 # Each product: sku, name, category slug, fabric, season, price, featured,
 # colours, a one-line pitch and its photo. Couture pieces are sold per
 # suit/piece; digital printed unstitched fabric is sold by length
@@ -451,6 +455,7 @@ class Command(BaseCommand):
             count += 1
             # Couture is made in small runs; printed fabric carries more stock.
             base_stock = 20 if by_meters else 6
+            sized = product.uses_sizes
             by_color = {}
             for idx, color_name in enumerate(data['colors']):
                 color = self.colors[color_name]
@@ -460,6 +465,11 @@ class Command(BaseCommand):
                         'sku': f"{product.sku}-{color.slug[:3].upper()}",
                         'price_delta': D('0.00'),
                         'stock': max(base_stock - idx * 2, 2),
+                        # Sized pieces count stock per size (their stock is
+                        # the total); later colours run thinner, so the
+                        # store shows sold-out and "only n left" sizes.
+                        'size_stock': ({size: max(n - idx, 0) for size, n in SIZE_RUN.items()}
+                                       if sized else {}),
                         'is_active': True,
                     },
                 )

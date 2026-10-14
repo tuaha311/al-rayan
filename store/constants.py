@@ -43,6 +43,9 @@ PROVINCE_CHOICES = [
 SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 SIZE_CHOICES = [(s, s) for s in SIZES]
 
+# Product and cart pages warn "Only n left" at or below this many units.
+LOW_STOCK_THRESHOLD = 5
+
 # (size, bust, hip, shirt length)
 SHIRT_SIZE_CHART = [
     ('XS', 34, 36, 47),

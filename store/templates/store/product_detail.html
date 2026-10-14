@@ -81,7 +81,7 @@
             <label class="h">Colour: <span id="chosen-color">{{ variants.0.color.name }}</span></label>
             <div class="opt-colors">
               {% for v in variants %}
-                <label class="opt-color" title="{{ v.color.name }}">
+                <label class="opt-color{% if v.stock_left == 0 %} is-out{% endif %}" title="{{ v.color.name }}{% if v.stock_left == 0 %} — sold out{% endif %}">
                   <input type="radio" name="variant_id" value="{{ v.id }}" data-name="{{ v.color.name }}"
                          {% if forloop.first %}checked{% endif %}/>
                   <span class="dot" style="background:{{ v.color.hex_code|default:'#999' }}"></span>
@@ -98,9 +98,9 @@
               <a href="{% url 'store:size_guide' %}" class="size-guide-link" data-size-guide>Size guide</a>
             </div>
             <div class="opt-sizes" role="radiogroup" aria-labelledby="size-label">
-              {% for s in sizes %}
-                <label class="opt-size">
-                  <input type="radio" name="size" value="{{ s }}" required/>
+              {% for s, left in size_options %}
+                <label class="opt-size{% if left == 0 %} is-out{% endif %}"{% if left == 0 %} title="Sold out"{% endif %}>
+                  <input type="radio" name="size" value="{{ s }}" required{% if left == 0 %} disabled{% endif %}/>
                   <span>{{ s }}</span>
                 </label>
               {% endfor %}
@@ -128,14 +128,15 @@
             <label class="h">Quantity</label>
             <div class="qty">
               <button type="button" data-step="-1" aria-label="Decrease">−</button>
-              <input type="text" name="quantity" id="qty-input" value="1" inputmode="numeric"/>
+              <input type="text" name="quantity" id="qty-input" value="1" inputmode="numeric"{% if max_quantity is not None %} data-max="{{ max_quantity }}"{% endif %}/>
               <button type="button" data-step="1" aria-label="Increase">+</button>
             </div>
+            <p class="stock-note{% if sold_out %} is-out{% endif %}" id="stock-note" aria-live="polite">{{ stock_note }}</p>
           </div>
 
           <div class="actions">
-            <button type="submit" class="btn btn-primary btn-block" style="flex:1">Add to cart</button>
-            <button type="submit" name="buy_now" value="1" class="btn btn-dark">Buy now</button>
+            <button type="submit" class="btn btn-primary btn-block" style="flex:1" data-buy{% if sold_out %} disabled{% endif %}>Add to cart</button>
+            <button type="submit" name="buy_now" value="1" class="btn btn-dark" data-buy{% if sold_out %} disabled{% endif %}>Buy now</button>
           </div>
         </form>
 
@@ -183,4 +184,5 @@
 {% endif %}
 
 {{ price_data|json_script:"price-data" }}
+{{ stock_data|json_script:"stock-data" }}
 {% endblock %}
