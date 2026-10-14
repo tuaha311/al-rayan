@@ -1,0 +1,8 @@
+<div class="flex gap-1.5" style="flex-wrap:nowrap">
+    {% for widget in widget.subwidgets %}
+        <label class="flex flex-col gap-1 items-center">
+            <span class="font-semibold text-xs text-font-important-light dark:text-font-important-dark">{{ widget.size }}</span>
+            {% include widget.template_name %}
+        </label>
+    {% endfor %}
+</div>

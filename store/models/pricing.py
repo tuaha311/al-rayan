@@ -22,31 +22,40 @@ class Discount(TimeStampedModel):
 
     name = models.CharField(max_length=120)
     code = models.CharField(
-        max_length=30, blank=True,
-        help_text='Optional label/coupon code shown internally.',
+        'internal code', max_length=30, blank=True,
+        help_text='Optional, for your own records. Shoppers never type it.',
     )
     discount_type = models.CharField(
-        max_length=12, choices=constants.DiscountType.CHOICES,
+        'take off', max_length=12, choices=constants.DiscountType.CHOICES,
         default=constants.DiscountType.PERCENTAGE,
     )
     value = models.DecimalField(
-        max_digits=10, decimal_places=2, validators=[MinValueValidator(ZERO)],
-        help_text='Percent (0–100) when type is percentage, else rupees off.',
+        'amount', max_digits=10, decimal_places=2, validators=[MinValueValidator(ZERO)],
+        help_text='e.g. 15 for 15% off, or 2000 for Rs 2,000 off.',
     )
 
     products = models.ManyToManyField(
         Product, blank=True, related_name='direct_discounts',
+        help_text='Type to search by name or code.',
     )
     categories = models.ManyToManyField(
         Category, blank=True, related_name='discounts',
-        help_text='Applies to all products in these categories (and below).',
+        help_text='Every product in these categories (and the ones inside '
+                  'them) goes on sale.',
     )
 
-    start_at = models.DateTimeField(null=True, blank=True)
-    end_at = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    start_at = models.DateTimeField(
+        'starts', null=True, blank=True,
+        help_text='Leave blank to start straight away.',
+    )
+    end_at = models.DateTimeField(
+        'ends', null=True, blank=True,
+        help_text='Leave blank to run until you switch it off.',
+    )
+    is_active = models.BooleanField('switched on', default=True)
     priority = models.IntegerField(
-        default=0, help_text='Higher wins when two discounts save the same.',
+        default=0, help_text='Only matters when two sales give the same '
+                             'saving on a product: the higher number is shown.',
     )
 
     class Meta:
@@ -111,11 +120,17 @@ class ShippingRate(TimeStampedModel):
         max_length=20, choices=constants.PROVINCE_CHOICES, unique=True,
     )
     rate = models.DecimalField(
-        max_digits=8, decimal_places=2, validators=[MinValueValidator(ZERO)],
+        'delivery charge', max_digits=8, decimal_places=2,
+        validators=[MinValueValidator(ZERO)],
     )
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        'in use', default=True,
+        help_text='When off, the default delivery charge from Store settings '
+                  'applies.',
+    )
 
     class Meta:
+        verbose_name = 'delivery charge'
         ordering = ['province']
 
     def __str__(self):
@@ -141,13 +156,15 @@ class StoreSetting(TimeStampedModel):
     store_name = models.CharField(max_length=120, default='Floral Finesse')
     currency_code = models.CharField(max_length=8, default=constants.CURRENCY_CODE)
     default_shipping_fee = models.DecimalField(
-        max_digits=8, decimal_places=2, default=Decimal('200.00'),
+        'default delivery charge', max_digits=8, decimal_places=2,
+        default=Decimal('200.00'),
+        help_text='Used for any province without its own delivery charge.',
     )
     free_shipping_threshold = models.DecimalField(
-        max_digits=10, decimal_places=2, default=ZERO,
-        help_text='Order subtotal at/above which shipping is free (0 = never).',
+        'free delivery from', max_digits=10, decimal_places=2, default=ZERO,
+        help_text='Orders worth this much or more get free delivery (0 = never).',
     )
-    cod_enabled = models.BooleanField(default=True)
+    cod_enabled = models.BooleanField('cash on delivery', default=True)
     contact_phone = models.CharField(max_length=30, blank=True)
     contact_email = models.EmailField(blank=True)
 

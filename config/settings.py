@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 from django.urls import reverse_lazy
 from django.templatetags.static import static
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'home',
     'store',
 ]
@@ -191,11 +193,11 @@ CONTACT_RECIPIENT_EMAIL = os.environ.get('CONTACT_RECIPIENT_EMAIL', EMAIL_HOST_U
 UNFOLD = {
     'SITE_TITLE': 'Floral Finesse Admin',
     'SITE_HEADER': 'Floral Finesse',
-    'SITE_SUBHEADER': 'Store management',
+    'SITE_SUBHEADER': 'Shop back office',
     'SITE_SYMBOL': 'checkroom',  # Material Symbols icon used as a fallback mark.
     'SITE_LOGO': lambda request: static('images/logo-floral.png'),
     'SHOW_HISTORY': True,
-    'SHOW_VIEW_ON_SITE': False,
+    'SHOW_VIEW_ON_SITE': True,
     'THEME': None,  # let the user toggle light/dark.
     'DASHBOARD_CALLBACK': 'store.dashboard.dashboard_callback',
     'BORDER_RADIUS': '8px',
@@ -223,64 +225,78 @@ UNFOLD = {
                 'title': _('Overview'),
                 'separator': False,
                 'items': [
-                    {
-                        'title': _('Dashboard'),
-                        'icon': 'dashboard',
-                        'link': reverse_lazy('admin:index'),
-                    },
+                    {'title': _('Dashboard'), 'icon': 'dashboard',
+                     'link': reverse_lazy('admin:index')},
+                    {'title': _('View the website'), 'icon': 'storefront',
+                     'link': '/', 'active': False},
                 ],
             },
             {
-                'title': _('Catalogue'),
+                'title': _('Selling'),
                 'separator': True,
                 'items': [
+                    {'title': _('Orders'), 'icon': 'shopping_bag',
+                     'link': reverse_lazy('admin:store_order_changelist'),
+                     'badge': 'store.dashboard.pending_orders_badge'},
                     {'title': _('Products'), 'icon': 'checkroom',
                      'link': reverse_lazy('admin:store_product_changelist')},
-                    {'title': _('Variants'), 'icon': 'palette',
-                     'link': reverse_lazy('admin:store_productvariant_changelist')},
+                    {'title': _('Discounts & sales'), 'icon': 'sell',
+                     'link': reverse_lazy('admin:store_discount_changelist')},
                     {'title': _('Categories'), 'icon': 'category',
                      'link': reverse_lazy('admin:store_category_changelist')},
+                ],
+            },
+            {
+                'title': _('Shop setup'),
+                'separator': True,
+                'collapsible': True,
+                'items': [
+                    {'title': _('Colours'), 'icon': 'palette',
+                     'link': reverse_lazy('admin:store_color_changelist')},
                     {'title': _('Fabrics'), 'icon': 'texture',
                      'link': reverse_lazy('admin:store_fabric_changelist')},
                     {'title': _('Seasons'), 'icon': 'sunny',
                      'link': reverse_lazy('admin:store_season_changelist')},
-                    {'title': _('Colors'), 'icon': 'colorize',
-                     'link': reverse_lazy('admin:store_color_changelist')},
-                ],
-            },
-            {
-                'title': _('Sales & Pricing'),
-                'separator': True,
-                'items': [
-                    {'title': _('Discounts'), 'icon': 'sell',
-                     'link': reverse_lazy('admin:store_discount_changelist')},
-                    {'title': _('Shipping rates'), 'icon': 'local_shipping',
+                    {'title': _('Delivery charges'), 'icon': 'local_shipping',
                      'link': reverse_lazy('admin:store_shippingrate_changelist')},
                     {'title': _('Store settings'), 'icon': 'tune',
                      'link': reverse_lazy('admin:store_storesetting_changelist')},
                 ],
             },
             {
-                'title': _('Orders'),
+                'title': _('Advanced'),
                 'separator': True,
+                'collapsible': True,
                 'items': [
-                    {'title': _('Orders'), 'icon': 'shopping_bag',
-                     'link': reverse_lazy('admin:store_order_changelist'),
-                     'badge': 'store.dashboard.pending_orders_badge'},
-                    {'title': _('Carts'), 'icon': 'shopping_cart',
+                    {'title': _('Stock by colour'), 'icon': 'inventory_2',
+                     'link': reverse_lazy('admin:store_productvariant_changelist')},
+                    {'title': _('Shopping carts'), 'icon': 'shopping_cart',
                      'link': reverse_lazy('admin:store_cart_changelist')},
-                ],
-            },
-            {
-                'title': _('Administration'),
-                'separator': True,
-                'items': [
-                    {'title': _('Users'), 'icon': 'person',
+                    {'title': _('Staff accounts'), 'icon': 'person',
                      'link': reverse_lazy('admin:auth_user_changelist')},
-                    {'title': _('Groups'), 'icon': 'group',
+                    {'title': _('Staff permissions'), 'icon': 'group',
                      'link': reverse_lazy('admin:auth_group_changelist')},
                 ],
             },
         ],
     },
+    # Quick filters above the orders list, one per step of an order.
+    'TABS': [
+        {
+            'models': ['store.order'],
+            'items': [
+                {'title': _(title), 'link': format_lazy('{}{}', reverse_lazy('admin:store_order_changelist'), query),
+                 'active': (lambda q: lambda request: request.GET.urlencode() == q.lstrip('?'))(query)}
+                for title, query in [
+                    ('All orders', ''),
+                    ('New', '?status__exact=pending'),
+                    ('Ready to send', '?status__in=confirmed%2Cprocessing'),
+                    ('Shipped', '?status__exact=shipped'),
+                    ('Delivered', '?status__exact=delivered'),
+                    ('Cash to collect', '?payment_status__exact=unpaid&status__in=shipped%2Cdelivered'),
+                    ('Cancelled & returned', '?status__in=cancelled%2Creturned'),
+                ]
+            ],
+        },
+    ],
 }

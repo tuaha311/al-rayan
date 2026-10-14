@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 from .base import TimeStampedModel
@@ -21,12 +22,16 @@ class Category(TimeStampedModel):
     slug = models.SlugField(max_length=140, unique=True, blank=True)
     parent = models.ForeignKey(
         'self', null=True, blank=True, on_delete=models.CASCADE,
-        related_name='children',
+        related_name='children', verbose_name='inside category',
+        help_text='Leave blank for a main category.',
     )
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='categories/', blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    sort_order = models.PositiveIntegerField(default=0)
+    image = models.ImageField(
+        upload_to='categories/', blank=True, null=True,
+        help_text='Banner for the menu. Leave blank to use a product photo.',
+    )
+    is_active = models.BooleanField('show on website', default=True)
+    sort_order = models.PositiveIntegerField('position', default=0)
 
     class Meta:
         verbose_name_plural = 'categories'
@@ -91,8 +96,8 @@ class Fabric(TimeStampedModel):
     name = models.CharField(max_length=80, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField('show on website', default=True)
+    sort_order = models.PositiveIntegerField('position', default=0)
 
     class Meta:
         ordering = ['sort_order', 'name']
@@ -111,8 +116,8 @@ class Season(TimeStampedModel):
 
     name = models.CharField(max_length=40, unique=True)
     slug = models.SlugField(max_length=60, unique=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField('show on website', default=True)
+    sort_order = models.PositiveIntegerField('position', default=0)
 
     class Meta:
         ordering = ['sort_order', 'name']
@@ -132,11 +137,12 @@ class Color(TimeStampedModel):
     name = models.CharField(max_length=60, unique=True)
     slug = models.SlugField(max_length=80, unique=True, blank=True)
     hex_code = models.CharField(
-        max_length=7, blank=True,
-        help_text='Optional hex like #1A2B3C, used to render a swatch.',
+        'swatch colour', max_length=7, blank=True,
+        help_text='The dot shoppers click to pick this colour.',
     )
 
     class Meta:
+        verbose_name = 'colour'
         ordering = ['name']
 
     def __str__(self):
@@ -175,8 +181,15 @@ class Product(TimeStampedModel):
     """
 
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=220, unique=True, blank=True)
-    sku = models.CharField(max_length=40, unique=True)
+    slug = models.SlugField(
+        'web address', max_length=220, unique=True, blank=True,
+        help_text='The end of the product page link. Changing it breaks old '
+                  'links that were shared.',
+    )
+    sku = models.CharField(
+        'product code', max_length=40, unique=True,
+        help_text='Your own code for this design, e.g. FF-BR-007. Must be unique.',
+    )
 
     category = models.ForeignKey(
         Category, on_delete=models.PROTECT, related_name='products',
@@ -191,12 +204,16 @@ class Product(TimeStampedModel):
         related_name='products',
     )
 
-    short_description = models.CharField(max_length=300, blank=True)
+    short_description = models.CharField(
+        'one-line summary', max_length=300, blank=True,
+        help_text='Shown under the name in the shop.',
+    )
     description = models.TextField(blank=True)
 
     base_price = models.DecimalField(
-        max_digits=10, decimal_places=2, validators=[MinValueValidator(ZERO)],
-        help_text='Price for the base length / one unit, before any discount.',
+        'price', max_digits=10, decimal_places=2, validators=[MinValueValidator(ZERO)],
+        help_text='Full price in rupees, before any sale. Sales are set under '
+                  'Discounts.',
     )
 
     # --- Unstitched-cloth length handling -------------------------------------
@@ -205,19 +222,19 @@ class Product(TimeStampedModel):
         help_text='Unstitched cloth sold by length. Disable for unit items.',
     )
     base_meters = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('3.50'),
+        'metres included', max_digits=5, decimal_places=2, default=Decimal('3.50'),
         validators=[MinValueValidator(ZERO)],
-        help_text='Length (in meters) included in the base price.',
+        help_text='Length of cloth the price above buys.',
     )
     additional_meter_price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=ZERO,
+        'price per extra metre', max_digits=10, decimal_places=2, default=ZERO,
         validators=[MinValueValidator(ZERO)],
-        help_text='Price charged per extra meter beyond the base length.',
+        help_text='Charged for each metre a customer adds.',
     )
     max_additional_meters = models.DecimalField(
-        max_digits=5, decimal_places=2, default=ZERO,
+        'most extra metres', max_digits=5, decimal_places=2, default=ZERO,
         validators=[MinValueValidator(ZERO)],
-        help_text='How many extra meters a customer may add (0 = none).',
+        help_text='How many extra metres a customer may add (0 = none).',
     )
 
     # --- Garment size ---------------------------------------------------------
@@ -229,19 +246,27 @@ class Product(TimeStampedModel):
     )
 
     # --- Inventory ------------------------------------------------------------
-    track_inventory = models.BooleanField(default=True)
+    track_inventory = models.BooleanField(
+        'limit sales to stock', default=True,
+        help_text='Turn off for made-to-order pieces that never run out.',
+    )
     stock = models.PositiveIntegerField(
-        default=0,
-        help_text='Stock used when the product has no colour variants.',
+        'in stock', default=0,
+        help_text='Pieces you have. Used when the product has no colours.',
     )
     size_stock = models.JSONField(
-        default=dict, blank=True,
-        help_text='Units per size, used when the product has no colour '
-                  'variants. Once set, the stock figure is their total.',
+        'stock per size', default=dict, blank=True,
+        help_text='Pieces of each size. Used when the product has no colours. '
+                  'Leave all blank to let every size share the figure above.',
     )
 
-    is_active = models.BooleanField(default=True)
-    is_featured = models.BooleanField(default=False)
+    is_active = models.BooleanField(
+        'show on website', default=True,
+        help_text='Turn off to hide it from the shop without deleting it.',
+    )
+    is_featured = models.BooleanField(
+        'feature on home page', default=False,
+    )
 
     objects = ProductQuerySet.as_manager()
 
@@ -254,6 +279,9 @@ class Product(TimeStampedModel):
 
     def __str__(self):
         return f'{self.name} ({self.sku})'
+
+    def get_absolute_url(self):
+        return reverse('store:product_detail', args=[self.slug])
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -361,21 +389,25 @@ class ProductVariant(TimeStampedModel):
     )
     color = models.ForeignKey(
         Color, on_delete=models.PROTECT, related_name='variants',
+        verbose_name='colour',
     )
-    sku = models.CharField(max_length=50, blank=True)
+    sku = models.CharField('code', max_length=50, blank=True)
     price_delta = models.DecimalField(
-        max_digits=10, decimal_places=2, default=ZERO,
-        help_text='Added to (or subtracted from) the base price for this colour.',
+        'extra charge', max_digits=10, decimal_places=2, default=ZERO,
+        help_text='Rupees added to the price for this colour (use a minus '
+                  'sign to take off). Usually 0.',
     )
-    stock = models.PositiveIntegerField(default=0)
+    stock = models.PositiveIntegerField('in stock', default=0)
     size_stock = models.JSONField(
-        default=dict, blank=True,
-        help_text='Units of this colour per size. Once set, the stock figure '
-                  'is their total.',
+        'stock per size', default=dict, blank=True,
+        help_text='Pieces of this colour in each size. The total is added '
+                  'up for you.',
     )
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField('available', default=True)
 
     class Meta:
+        verbose_name = 'colour'
+        verbose_name_plural = 'colours & stock'
         ordering = ['color__name']
         constraints = [
             models.UniqueConstraint(
@@ -408,15 +440,20 @@ class ProductImage(TimeStampedModel):
     )
     variant = models.ForeignKey(
         ProductVariant, on_delete=models.CASCADE, null=True, blank=True,
-        related_name='images',
-        help_text='Tie this image to a colour, or leave blank for general shots.',
+        related_name='images', verbose_name='colour',
+        help_text='Pick a colour to show this photo when shoppers choose it.',
     )
-    image = models.ImageField(upload_to=product_image_path)
-    alt_text = models.CharField(max_length=200, blank=True)
-    is_primary = models.BooleanField(default=False)
-    sort_order = models.PositiveIntegerField(default=0)
+    image = models.ImageField('photo', upload_to=product_image_path)
+    alt_text = models.CharField(
+        'caption', max_length=200, blank=True,
+        help_text='Read aloud to blind shoppers and used by Google. Filled in '
+                  'for you if left blank.',
+    )
+    is_primary = models.BooleanField('main photo', default=False)
+    sort_order = models.PositiveIntegerField('position', default=0)
 
     class Meta:
+        verbose_name = 'photo'
         ordering = ['-is_primary', 'sort_order', 'id']
 
     def __str__(self):

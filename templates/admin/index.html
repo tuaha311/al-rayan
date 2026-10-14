@@ -9,18 +9,31 @@
 {% endblock %}
 
 {% block content %}
-    {# ---- KPI cards ---- #}
-    {% if kpi_cards %}
+    {# ---- Needs doing: each card opens that exact list ---- #}
+    {% if todo_cards %}
+        <h2 class="font-semibold mb-3 text-base-900 dark:text-base-100">{% trans "Needs doing" %}</h2>
         <div class="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4">
-            {% for card in kpi_cards %}
-                <div class="bg-white border border-base-200 flex flex-col p-6 relative rounded-default shadow-xs dark:bg-base-900 dark:border-base-800">
+            {% for card in todo_cards %}
+                <a href="{{ card.link }}" class="bg-white border flex flex-col p-6 relative rounded-default shadow-xs hover:border-primary-600 dark:bg-base-900 {% if card.urgent %}border-primary-600 dark:border-primary-500{% else %}border-base-200 dark:border-base-800{% endif %}">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-base-500 dark:text-base-400">{{ card.title }}</span>
                         <span class="material-symbols-outlined text-primary-600 dark:text-primary-500">{{ card.icon }}</span>
                     </div>
                     <span class="text-2xl font-semibold mt-3 text-base-900 dark:text-base-100">{{ card.value }}</span>
                     <span class="text-xs mt-1 text-base-400 dark:text-base-500">{{ card.footer }}</span>
-                </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# ---- Shortcuts ---- #}
+    {% if quick_links %}
+        <div class="flex flex-wrap gap-3 mb-8">
+            {% for q in quick_links %}
+                <a href="{{ q.link }}" {% if q.new_tab %}target="_blank" rel="noopener"{% endif %} class="bg-white border border-base-200 flex font-medium gap-2 items-center px-4 py-2 rounded-default shadow-xs text-sm text-base-700 hover:border-primary-600 hover:text-primary-600 dark:bg-base-900 dark:border-base-800 dark:text-base-200">
+                    <span class="material-symbols-outlined text-primary-600 dark:text-primary-500">{{ q.icon }}</span>
+                    {{ q.title }}
+                </a>
             {% endfor %}
         </div>
     {% endif %}
@@ -28,8 +41,9 @@
     {# ---- Recent orders ---- #}
     {% if recent_orders %}
         <div class="bg-white border border-base-200 mb-8 overflow-hidden rounded-default shadow-xs dark:bg-base-900 dark:border-base-800">
-            <div class="border-b border-base-200 px-6 py-4 dark:border-base-800">
-                <h2 class="font-semibold text-[15px] text-base-900 dark:text-base-100">{% trans "Recent orders" %}</h2>
+            <div class="border-b border-base-200 flex items-center justify-between px-6 py-4 dark:border-base-800">
+                <h2 class="font-semibold text-[15px] text-base-900 dark:text-base-100">{% trans "Latest orders" %}</h2>
+                <a href="{{ all_orders_link }}" class="font-medium text-sm text-primary-600 dark:text-primary-400">{% trans "See all orders" %} →</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -48,12 +62,19 @@
                             <tr class="border-t border-base-100 dark:border-base-800">
                                 <td class="px-6 py-3">
                                     <a href="{% url 'admin:store_order_change' o.pk %}" class="font-medium text-primary-600 dark:text-primary-400">{{ o.order_number }}</a>
+                                    <div class="text-xs text-base-400">{{ o.created_at|date:"j M, g:i A" }}</div>
                                 </td>
                                 <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.full_name }}</td>
                                 <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.city }}</td>
-                                <td class="px-6 py-3 text-base-700 dark:text-base-300">Rs&nbsp;{{ o.total|floatformat:0 }}</td>
-                                <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.get_status_display }}</td>
-                                <td class="px-6 py-3 text-base-700 dark:text-base-300">{{ o.get_payment_status_display }}</td>
+                                <td class="px-6 py-3 text-base-700 dark:text-base-300">Rs&nbsp;{{ o.total|floatformat:"0g" }}</td>
+                                <td class="px-6 py-3">{% include "unfold/helpers/label.html" with text=o.status_text type=o.status_kind %}</td>
+                                <td class="px-6 py-3">
+                                    {% if o.is_paid %}
+                                        {% include "unfold/helpers/label.html" with text="Paid" type="success" %}
+                                    {% else %}
+                                        {% include "unfold/helpers/label.html" with text="Unpaid" type="danger" %}
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -62,12 +83,22 @@
         </div>
     {% endif %}
 
-    {# ---- Standard app list (kept) ---- #}
-    <div class="flex flex-col lg:flex-row lg:gap-8">
-        <div class="grow">
-            {% include "unfold/helpers/app_list_default.html" %}
+    {# ---- Shop at a glance ---- #}
+    {% if kpi_cards %}
+        <h2 class="font-semibold mb-3 text-base-900 dark:text-base-100">{% trans "At a glance" %}</h2>
+        <div class="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+            {% for card in kpi_cards %}
+                <div class="bg-white border border-base-200 flex flex-col p-6 rounded-default shadow-xs dark:bg-base-900 dark:border-base-800">
+                    <span class="text-sm font-medium text-base-500 dark:text-base-400">{{ card.title }}</span>
+                    <span class="text-2xl font-semibold mt-3 text-base-900 dark:text-base-100">{{ card.value }}</span>
+                    <span class="text-xs mt-1 text-base-400 dark:text-base-500">{{ card.footer }}</span>
+                </div>
+            {% endfor %}
         </div>
+    {% endif %}
 
+    {# ---- Who changed what, most recent first ---- #}
+    <div class="lg:max-w-md">
         {% include "unfold/helpers/history.html" %}
     </div>
 {% endblock %}

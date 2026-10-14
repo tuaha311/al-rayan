@@ -71,10 +71,10 @@ class Order(TimeStampedModel):
     )
 
     # --- Customer & delivery -------------------------------------------------
-    full_name = models.CharField(max_length=120)
+    full_name = models.CharField('customer name', max_length=120)
     phone = models.CharField(max_length=20)
     email = models.EmailField(blank=True)
-    address_line = models.CharField(max_length=255)
+    address_line = models.CharField('address', max_length=255)
     city = models.CharField(max_length=80)
     province = models.CharField(max_length=20, choices=constants.PROVINCE_CHOICES)
     postal_code = models.CharField(max_length=12, blank=True)
@@ -97,11 +97,16 @@ class Order(TimeStampedModel):
     # --- Money (snapshotted at checkout) -------------------------------------
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=ZERO)
     discount_total = models.DecimalField(max_digits=12, decimal_places=2, default=ZERO)
-    shipping_fee = models.DecimalField(max_digits=8, decimal_places=2, default=ZERO)
+    shipping_fee = models.DecimalField(
+        'delivery charge', max_digits=8, decimal_places=2, default=ZERO,
+    )
     total = models.DecimalField(max_digits=12, decimal_places=2, default=ZERO)
 
-    customer_note = models.TextField(blank=True)
-    admin_note = models.TextField(blank=True)
+    customer_note = models.TextField('note from customer', blank=True)
+    admin_note = models.TextField(
+        'private note', blank=True,
+        help_text='Only staff see this, e.g. "Called, will collect Friday".',
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -163,26 +168,29 @@ class OrderItem(TimeStampedModel):
     )
     variant = models.ForeignKey(
         ProductVariant, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='colour',
     )
 
     # Snapshots
     product_name = models.CharField(max_length=200)
     sku = models.CharField(max_length=50, blank=True)
-    color_name = models.CharField(max_length=60, blank=True)
+    color_name = models.CharField('colour', max_length=60, blank=True)
     size = models.CharField(max_length=5, blank=True, choices=constants.SIZE_CHOICES)
     base_meters = models.DecimalField(max_digits=5, decimal_places=2, default=ZERO)
-    additional_meters = models.DecimalField(max_digits=5, decimal_places=2, default=ZERO)
+    additional_meters = models.DecimalField(
+        'extra metres', max_digits=5, decimal_places=2, default=ZERO,
+    )
 
     unit_original_price = models.DecimalField(
         max_digits=10, decimal_places=2, default=ZERO,
         help_text='Unit price before discount (incl. variant & extra length).',
     )
     unit_price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=ZERO,
+        'price', max_digits=10, decimal_places=2, default=ZERO,
         help_text='Unit price actually charged, after discount.',
     )
     quantity = models.PositiveIntegerField(default=1)
-    line_total = models.DecimalField(max_digits=12, decimal_places=2, default=ZERO)
+    line_total = models.DecimalField('total', max_digits=12, decimal_places=2, default=ZERO)
 
     def __str__(self):
         return f'{self.quantity} × {self.product_name}'

@@ -106,7 +106,7 @@ class OrderStatus:
     RETURNED = 'returned'
 
     CHOICES = [
-        (PENDING, 'Pending'),
+        (PENDING, 'New'),
         (CONFIRMED, 'Confirmed'),
         (PROCESSING, 'Processing'),
         (SHIPPED, 'Shipped'),

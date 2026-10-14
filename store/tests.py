@@ -391,3 +391,111 @@ class StockLimitTests(TestCase):
         r = self.client.get(reverse('store:product_detail', args=[self.shawl.slug]))
         self.assertContains(r, 'Only 3 left')
         self.assertContains(r, 'data-max="3"')
+
+
+class BackOfficeTests(TestCase):
+    """The back office pages load and their shortcuts do what they say."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        self.client.force_login(User.objects.create_superuser('boss', 'b@x.pk', 'pw'))
+        self.cat = Category.objects.create(name='Formals')
+        self.color = Color.objects.create(name='Teal', hex_code='#008080')
+        self.product = Product.objects.create(
+            name='Zeba Kurta', sku='T-ZK-1', category=self.cat,
+            base_price=D('9000'), sold_by_meters=False, stock=0,
+        )
+        ProductVariant.objects.create(
+            product=self.product, color=self.color, size_stock={'S': 0, 'M': 2},
+        )
+        self.order = Order.objects.create(
+            full_name='Ayesha', phone='0300 1234567', address_line='House 1',
+            city='Lahore', province=constants.PROVINCE_PUNJAB,
+        )
+
+    def _product_post(self, **overrides):
+        data = {
+            'name': 'Noor Shawl', 'category': self.cat.pk, 'base_price': '12000',
+            'product_type': 'one_size', 'base_meters': '0', 'additional_meter_price': '0',
+            'max_additional_meters': '0', 'track_inventory': 'on', 'stock': '4',
+            'is_active': 'on', 'sku': '', 'slug': 'noor-shawl',
+            'images-TOTAL_FORMS': '0', 'images-INITIAL_FORMS': '0',
+            'variants-TOTAL_FORMS': '0', 'variants-INITIAL_FORMS': '0',
+        }
+        for i, size in enumerate(constants.SIZES):
+            data[f'size_stock_{i}'] = ''
+        data.update(overrides)
+        return self.client.post(reverse('admin:store_product_add'), data)
+
+    def test_every_page_loads(self):
+        names = [
+            'index', 'store_product_changelist', 'store_product_add',
+            'store_order_changelist', 'store_order_add', 'store_discount_add',
+            'store_discount_changelist', 'store_category_changelist',
+            'store_color_changelist', 'store_fabric_changelist',
+            'store_season_changelist', 'store_shippingrate_changelist',
+            'store_productvariant_changelist', 'store_cart_changelist',
+        ]
+        for name in names:
+            with self.subTest(name):
+                self.assertEqual(self.client.get(reverse(f'admin:{name}')).status_code, 200)
+        for name, pk in (('store_product_change', self.product.pk),
+                         ('store_order_change', self.order.pk)):
+            self.assertEqual(self.client.get(reverse(f'admin:{name}', args=[pk])).status_code, 200)
+
+    def test_dashboard_counts_sold_out_and_new_orders(self):
+        self.product.variants.update(stock=0)
+        response = self.client.get(reverse('admin:index'))
+        cards = {c['title']: c['value'] for c in response.context['todo_cards']}
+        self.assertEqual(cards['New orders to confirm'], 1)
+        self.assertEqual(cards['Sold out'], 1)
+
+    def test_stock_filter(self):
+        url = reverse('admin:store_product_changelist')
+        low = self.client.get(url + '?stock=low').context['cl'].result_list
+        self.assertEqual([p.pk for p in low], [self.product.pk])
+        self.assertEqual(len(self.client.get(url + '?stock=out').context['cl'].result_list), 0)
+
+    def test_store_settings_opens_the_one_record(self):
+        response = self.client.get(reverse('admin:store_storesetting_changelist'))
+        self.assertRedirects(response, reverse('admin:store_storesetting_change',
+                                               args=[StoreSetting.load().pk]))
+
+    def test_new_product_kind_and_code(self):
+        response = self._product_post()
+        self.assertEqual(response.status_code, 302, getattr(response, 'context', None)
+                         and response.context['adminform'].form.errors)
+        p = Product.objects.get(name='Noor Shawl')
+        self.assertFalse(p.sold_by_meters)
+        self.assertFalse(p.sold_in_sizes)
+        self.assertEqual(p.sku, 'FF-NOOR-SHAWL')
+        self.assertEqual(p.stock, 4)
+
+    def test_new_sized_product_counts_stock_per_size(self):
+        sizes = {f'size_stock_{i}': n for i, n in enumerate(['', '2', '3', '', '', ''])}
+        self._product_post(product_type='sized', name='Gul Kurta', slug='gul-kurta', **sizes)
+        p = Product.objects.get(name='Gul Kurta')
+        self.assertTrue(p.uses_sizes)
+        self.assertEqual(p.size_stock, {'XS': 0, 'S': 2, 'M': 3, 'L': 0, 'XL': 0, 'XXL': 0})
+        self.assertEqual(p.stock, 5)
+
+    def test_order_buttons_follow_the_order_steps(self):
+        change = reverse('admin:store_order_change', args=[self.order.pk])
+        paths = lambda: [a['path'].rstrip('/').rsplit('/', 1)[-1]
+                         for a in self.client.get(change).context['actions_detail']]
+        self.assertEqual(sorted(paths()), ['cancel', 'confirm', 'paid'])
+
+        self.client.get(change.replace('change/', 'confirm/'))
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, constants.OrderStatus.CONFIRMED)
+        self.assertEqual(sorted(paths()), ['cancel', 'paid', 'ship'])
+
+        self.client.get(change.replace('change/', 'paid/'))
+        self.order.refresh_from_db()
+        self.assertTrue(self.order.is_paid)
+        self.assertEqual(sorted(paths()), ['cancel', 'ship'])
+
+    def test_whatsapp_number(self):
+        from .admin import whatsapp_number
+        self.assertEqual(whatsapp_number('0300 1234567'), '923001234567')
+        self.assertEqual(whatsapp_number('+92 321 4567890'), '923214567890')
